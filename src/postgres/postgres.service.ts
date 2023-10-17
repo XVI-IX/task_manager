@@ -1,18 +1,21 @@
-import { Injectable } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
-import { Client } from "pg";
+import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { Pool } from 'pg';
 
 @Injectable()
-export class PgService {
-  private client: Client;
+export class PostgresService {
+  private readonly logger = new Logger(PostgresService.name);
+  private readonly pool: Pool;
 
   constructor(
     private config: ConfigService
   ) {
-    this.client = new Client({
-      connectionString: this.config.get('DATABASE_URL')
+    this.pool = new Pool({
+      user: this.config.DB_USERNAME,
+      host: this.config.DB_HOST,
+      database: this.config.DB_NAME,
+      password: this.config.DB_PASSWORD,
+      port: this.config.DB_PORT
     });
-
-    this.client.connect();
   }
 }
