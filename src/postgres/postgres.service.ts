@@ -11,11 +11,23 @@ export class PostgresService {
     private config: ConfigService
   ) {
     this.pool = new Pool({
-      user: this.config.DB_USERNAME,
-      host: this.config.DB_HOST,
-      database: this.config.DB_NAME,
-      password: this.config.DB_PASSWORD,
-      port: this.config.DB_PORT
+      user: this.config.get("DB_USERNAME"),
+      host: this.config.get("DB_HOST"),
+      database: this.config.get('DB_NAME'),
+      password: this.config.get('DB_PASSWORD'),
+      port: this.config.get("DB_PORT")
     });
+  }
+
+  async query (text: string, values: any[] = []): Promise<any> {
+    try {
+      const result = await this.pool.query(text, values);
+      return result;
+    } catch (error) {
+      this.logger.error(
+        `Error executing query: ${error.message}`
+      );
+      throw error;
+    }
   }
 }
