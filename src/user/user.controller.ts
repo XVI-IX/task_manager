@@ -1,9 +1,16 @@
 import { Controller, Get } from '@nestjs/common';
 
-@Controller('users')
+@Controller()
 export class UserController {
 
   //TODO: Get the current user's profile information
   @Get('profile')
-  async getProfile() {}
+  async getProfile() {
+
+  }
+
+  @Get('dashboard')
+  async getDashboard() {
+    
+  }
 }
