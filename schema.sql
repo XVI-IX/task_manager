@@ -1,6 +1,6 @@
 -- Create users table
 CREATE TABLE IF NOT EXISTS users (
-  id SERIAL PRIMARY KEY,
+  user_id SERIAL PRIMARY KEY,
   username VARCHAR(50) UNIQUE,
   email VARCHAR(100) UNIQUE NOT NULL,
   password VARCHAR(255) NOT NULL UNIQUE, -- store securely hashed password
@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS users (
 -- Create Categories table
 CREATE TABLE IF NOT EXISTS categories (
   category_id SERIAL PRIMARY KEY,
-  category_name VARCHAR(50) NOT NULL,
+  category_name VARCHAR(50) NOT NULL
 );
 
 -- Create Tasks table
@@ -21,8 +21,8 @@ CREATE TABLE IF NOT EXISTS tasks (
   description TEXT,
   due_date TIMESTAMPTZ,
   priority INTEGER DEFAULT 1,
-  user_id INTEGER REFERENCES users(id),
+  user_id INTEGER REFERENCES users(user_id),
   category_id INTEGER REFERENCES categories(category_id),
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
