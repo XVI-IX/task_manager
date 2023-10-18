@@ -1,0 +1,21 @@
+import { IsString, IsNotEmpty, IsDate, IsInt } from "class-validator";
+
+export class TaskDto {
+  @IsString()
+  @IsNotEmpty()
+  title: string;
+
+  @IsString()
+  description: string;
+
+  @IsDate()
+  due_date: Date;
+
+  @IsInt()
+  priority: number;
+
+  @IsInt()
+  category_id: number;
+
+  user_id?: number;
+}

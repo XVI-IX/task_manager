@@ -1,7 +1,9 @@
-import { Controller, Post, Get, Body } from '@nestjs/common';
+import { Controller, Post, Get, Body, UseGuards } from '@nestjs/common';
 import { RegisterDto } from './dtos/register.dto';
 import { LoginDto } from './dtos/login.dto';
 import { AuthService } from './auth.service';
+import { AuthGuard } from './auth.guard';
+
 
 @Controller('auth')
 export class AuthController {
@@ -23,6 +25,7 @@ export class AuthController {
   }
 
   // TODO: Log out of the current user account
+  @UseGuards(AuthGuard)
   @Get("logout")
   async logout() {}
 }
