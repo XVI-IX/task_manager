@@ -6,8 +6,8 @@ import { PostgresService } from 'src/postgres/postgres.service';
 export class UserService {
 
   constructor(
-    private config: ConfigService,
-    private psql: PostgresService
+    private config?: ConfigService,
+    private psql?: PostgresService
   ) {}
 
   async profile(@Req() req: Request) {
