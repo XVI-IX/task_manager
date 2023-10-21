@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { TaskController } from './task.controller';
 import { TaskService } from './task.service';
 import { ConfigModule } from '@nestjs/config';
-import { PostgresModule } from 'src/postgres/postgres.module';
+import { PostgresModule } from '../postgres/postgres.module';
 
 @Module({
   controllers: [TaskController],

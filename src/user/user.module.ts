@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
-import { PostgresModule } from 'src/postgres/postgres.module';
+import { PostgresModule } from '../postgres/postgres.module';
 import { APP_GUARD } from '@nestjs/core';
-import { AuthGuard } from 'src/auth/auth.guard';
+import { AuthGuard } from '../auth/auth.guard';
 import { JwtModule } from '@nestjs/jwt';
 
 

@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PostgresService } from 'src/postgres/postgres.service';
+import { PostgresService } from '../postgres/postgres.service';
 
 import * as argon from 'argon2';
 import { LoginDto } from './dtos/login.dto';

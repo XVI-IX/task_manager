@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, Req, Request } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PostgresService } from 'src/postgres/postgres.service';
+import { PostgresService } from '../postgres/postgres.service';
 
 @Injectable()
 export class UserService {
