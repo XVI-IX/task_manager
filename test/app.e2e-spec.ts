@@ -4,6 +4,7 @@ import * as pactum from 'pactum';
 import { INestApplication, ValidationPipe } from "@nestjs/common";
 import { ConfigModule,ConfigService } from "@nestjs/config";
 import { RegisterDto } from "src/auth/dtos/register.dto";
+import { LoginDto } from "src/auth/dtos/login.dto";
 
 describe("App e2e", () => {
 
@@ -11,6 +12,7 @@ describe("App e2e", () => {
   let configService: ConfigService;
 
   beforeAll( async () => {
+    process.env.NODE_ENV = 'test';
 
     const moduleRef = await Test.createTestingModule({
       imports: [ 
@@ -31,6 +33,7 @@ describe("App e2e", () => {
 
     await app.init();
     await app.listen(3030)
+    pactum.request.setBaseUrl('http://localhost:3030')
 
     configService = app.get<ConfigService>(ConfigService);
 
@@ -46,13 +49,25 @@ describe("App e2e", () => {
         }
 
         return pactum.spec().post(
-          'http://localhost:3000/auth/register'
+          '/auth/register'
         ).withBody(dto)
          .expectStatus(201);
       })
     });
 
-    describe('Login', () => {});
+    describe('Login', () => {
+      it('Should Login', () => {
+        const dto: LoginDto = {
+          email: 'admin@testing.com',
+          password: 'admin'
+        }
+
+        return pactum.spec().post(
+          '/auth/login'
+        ).withBody(dto)
+        //  .expectStatus(200);
+      });
+    });
 
     describe('Logout', () => {});
   });

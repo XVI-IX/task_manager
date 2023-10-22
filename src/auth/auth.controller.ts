@@ -22,6 +22,7 @@ export class AuthController {
 
   // TODO: Log in to an exisiting user account
   @Post("login")
+  @Public()
   async login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
   }
