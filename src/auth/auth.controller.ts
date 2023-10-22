@@ -3,6 +3,7 @@ import { RegisterDto } from './dtos/register.dto';
 import { LoginDto } from './dtos/login.dto';
 import { AuthService } from './auth.service';
 import { AuthGuard } from './auth.guard';
+import { Public } from '../decorators/public.decorator';
 
 
 @Controller('auth')
@@ -14,6 +15,7 @@ export class AuthController {
 
   // TODO: Create a new user account.
   @Post("register")
+  @Public()
   async register(@Body() dto: RegisterDto) {
     return this.authService.register(dto);
   }

@@ -1,7 +1,9 @@
 import { Test } from "@nestjs/testing";
 import { AppModule } from "../src/app.module";
+import * as pactum from 'pactum';
 import { INestApplication, ValidationPipe } from "@nestjs/common";
 import { ConfigModule,ConfigService } from "@nestjs/config";
+import { RegisterDto } from "src/auth/dtos/register.dto";
 
 describe("App e2e", () => {
 
@@ -28,42 +30,55 @@ describe("App e2e", () => {
     )
 
     await app.init();
+    await app.listen(3030)
 
     configService = app.get<ConfigService>(ConfigService);
 
-    describe('Auth', () => {
+  });
 
-      describe('Register', () => {});
+  describe('Auth', () => {
+    describe('Register', () => {
+      it('Should Register', () => {
+        const dto: RegisterDto = {
+          username: 'admin',
+          password: 'admin',
+          email: 'admin@testing.com'
+        }
 
-      describe('Login', () => {});
-
-      describe('Logout', () => {});
+        return pactum.spec().post(
+          'http://localhost:3000/auth/register'
+        ).withBody(dto)
+         .expectStatus(201);
+      })
     });
 
-    describe('Task', () => {
+    describe('Login', () => {});
 
-      describe('Get list of all tasks for user', () => {});
+    describe('Logout', () => {});
+  });
 
-      describe('Create Tasks', () => {});
+  describe('Task', () => {
 
-      describe('Get a specific task by ID', () => {});
+    describe('Get list of all tasks for user', () => {});
 
-      describe('Get a list of all tasks with a specific due date', () => {});
+    describe('Create Tasks', () => {});
 
-      describe('Update a specific task', () => {});
+    describe('Get a specific task by ID', () => {});
 
-      describe('Delete a specific task', () => {});
+    describe('Get a list of all tasks with a specific due date', () => {});
 
-      describe('Get tasks with specified priority', () => {});
-    });
+    describe('Update a specific task', () => {});
 
-    describe('User', () => {
+    describe('Delete a specific task', () => {});
 
-      describe('Get User Profile', () => {});
+    describe('Get tasks with specified priority', () => {});
+  });
 
-      describe('Get User Dashboard', () => {});
-    });
+  describe('User', () => {
 
+    describe('Get User Profile', () => {});
+
+    describe('Get User Dashboard', () => {});
   });
 
   afterAll(() => {
