@@ -5,11 +5,13 @@ import { INestApplication, ValidationPipe } from "@nestjs/common";
 import { ConfigModule,ConfigService } from "@nestjs/config";
 import { RegisterDto } from "src/auth/dtos/register.dto";
 import { LoginDto } from "src/auth/dtos/login.dto";
+import { PostgresService } from "../src/postgres/postgres.service";
 
 describe("App e2e", () => {
 
   let app: INestApplication;
   let configService: ConfigService;
+  let psql: PostgresService;
 
   beforeAll( async () => {
     process.env.NODE_ENV = 'test';
@@ -31,10 +33,16 @@ describe("App e2e", () => {
       })
     )
 
-    await app.init();
-    await app.listen(3030)
-    pactum.request.setBaseUrl('http://localhost:3030')
+    
 
+    await app.init();
+    await app.listen(3030);
+
+    psql = app.get<PostgresService>(PostgresService);
+
+    psql.clean();
+    
+    pactum.request.setBaseUrl('http://localhost:3030');
     configService = app.get<ConfigService>(ConfigService);
 
   });
@@ -65,11 +73,18 @@ describe("App e2e", () => {
         return pactum.spec().post(
           '/auth/login'
         ).withBody(dto)
-        //  .expectStatus(200);
+         .expectStatus(200);
       });
     });
 
-    describe('Logout', () => {});
+    describe('Logout', () => {
+      it('Should redirect', () => {
+        pactum.spec().get(
+          '/auth/logout'
+        ).withFollowRedirects(true)
+         .expectStatus(200);
+      });
+    });
   });
 
   describe('Task', () => {

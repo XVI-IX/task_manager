@@ -43,7 +43,7 @@ export class AuthService {
 
     try {
       const user = await this.psql.query(query, values);
-      const data = user.rows[0]
+      const data = user.rows[0];
 
       if (!user) {
         throw new ForbiddenException("Invalid Credentials.");

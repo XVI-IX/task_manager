@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, UseGuards } from '@nestjs/common';
+import { Controller, Post, Get, Body, UseGuards, HttpCode, Redirect } from '@nestjs/common';
 import { RegisterDto } from './dtos/register.dto';
 import { LoginDto } from './dtos/login.dto';
 import { AuthService } from './auth.service';
@@ -22,13 +22,17 @@ export class AuthController {
 
   // TODO: Log in to an exisiting user account
   @Post("login")
+  @HttpCode(200)
   @Public()
   async login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
   }
 
   // TODO: Log out of the current user account
-  @UseGuards(AuthGuard)
   @Get("logout")
-  async logout() {}
+  @UseGuards(AuthGuard)
+  // @Redirect('auth/login', 200)
+  async logout() {
+    return this.authService.logout();
+  }
 }
