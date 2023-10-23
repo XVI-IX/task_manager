@@ -50,12 +50,32 @@ export class AuthGuard implements CanActivate {
       // Attach decoded payload to the request object.
       request['user'] = payload;
     } catch (error) {
-      throw new Error(error.message)
+      console.error(error);
+      throw new Error(error.message);
     }
   }
 
   private extractTokenFromHeader(request: Request): string | undefined {
-    const [type, token] = request.headers.authorization.split(' ') ?? [];
-    return type == 'Bearer' ? token : undefined;
+    try {
+      if (request.headers.authorization) {
+        const [type, token] = request.headers.authorization.split(' ') ?? [];
+        return type == 'Bearer' ? token : undefined;
+      }
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+
   }
+
+  // private extractTokenFromHeader(request: Request): string | undefined {
+  //   if (request.headers.authorization) {
+  //     const [type, token] = request.headers.authorization.split(' ');
+  //     if (type === 'Bearer' && token) {
+  //       return token;
+  //     }
+  //   }
+  //   return undefined;
+  // }
+  
 }

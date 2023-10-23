@@ -46,8 +46,6 @@ export class TaskService {
       console.error(error.message);
       throw new Error(error.message);
     }
-
-
   }
 
   async createTasks(req: Request, dto: TaskDto) {
@@ -82,6 +80,9 @@ export class TaskService {
         if (!addTask) {
           throw new InternalServerErrorException("Please try again");
         }
+
+        return addTask;
+        
       } catch (error) {
         console.error(error);
         throw new InternalServerErrorException("Please try again");
@@ -90,7 +91,5 @@ export class TaskService {
       console.error(error)
       throw new Error(error.message);
     }
-
-
   }
 }

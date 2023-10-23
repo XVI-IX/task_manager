@@ -6,12 +6,14 @@ import { ConfigModule,ConfigService } from "@nestjs/config";
 import { RegisterDto } from "src/auth/dtos/register.dto";
 import { LoginDto } from "src/auth/dtos/login.dto";
 import { PostgresService } from "../src/postgres/postgres.service";
+import { TaskDto } from "src/task/dto/task.dto";
 
 describe("App e2e", () => {
 
   let app: INestApplication;
   let configService: ConfigService;
   let psql: PostgresService;
+  let authToken: string;
 
   beforeAll( async () => {
     process.env.NODE_ENV = 'test';
@@ -41,7 +43,7 @@ describe("App e2e", () => {
     psql = app.get<PostgresService>(PostgresService);
 
     psql.clean();
-    
+
     pactum.request.setBaseUrl('http://localhost:3030');
     configService = app.get<ConfigService>(ConfigService);
 
@@ -64,16 +66,23 @@ describe("App e2e", () => {
     });
 
     describe('Login', () => {
-      it('Should Login', () => {
+      it('Should Login', async () => {
         const dto: LoginDto = {
           email: 'admin@testing.com',
           password: 'admin'
         }
 
-        return pactum.spec().post(
+        const response = await pactum.spec().post(
           '/auth/login'
         ).withBody(dto)
-         .expectStatus(200);
+         .expectStatus(200)
+         .end();
+
+        authToken = response.body.access_token;
+
+        // authToken = response.;
+
+        return response;
       });
     });
 
@@ -89,9 +98,29 @@ describe("App e2e", () => {
 
   describe('Task', () => {
 
-    describe('Get list of all tasks for user', () => {});
+    describe('Get all tasks', () => {
 
-    describe('Create Tasks', () => {});
+    });
+
+    describe('Create Tasks', () => {
+      it('Should create task', () => {
+        const dto: TaskDto = {
+          title: 'Task Title',
+          description: 'Task Description',
+          due_date: new Date(),
+          priority: 0,
+          category_id: 1
+        }
+
+        return pactum.spec().post(
+          '/tasks/create'
+        )
+        .withBearerToken(authToken)
+        .withBody(dto)
+        .expectStatus(201);
+         
+      })
+    });
 
     describe('Get a specific task by ID', () => {});
 

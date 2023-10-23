@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, Injectable, Req, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PostgresService } from '../postgres/postgres.service';
 
@@ -6,6 +6,7 @@ import * as argon from 'argon2';
 import { LoginDto } from './dtos/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { RegisterDto } from './dtos/register.dto';
+import { Request } from 'express';
 
 
 @Injectable()
@@ -45,7 +46,7 @@ export class AuthService {
       const user = await this.psql.query(query, values);
       const data = user.rows[0];
 
-      if (!user) {
+      if (!data) {
         throw new ForbiddenException("Invalid Credentials.");
       }
       
@@ -72,7 +73,7 @@ export class AuthService {
       };
 
     } catch (error) {
-      throw new Error(error.message);
+      throw new UnauthorizedException(error.message);
     }
 
   }
