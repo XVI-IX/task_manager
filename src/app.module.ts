@@ -11,7 +11,8 @@ import { AuthModule } from './auth/auth.module';
   imports: [
     UserModule, TaskModule,
     PostgresModule, ConfigModule.forRoot({
-      isGlobal: true
+      isGlobal: true,
+      envFilePath: '.env'
     }), AuthModule],
   controllers: [AppController],
   providers: [AppService],

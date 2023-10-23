@@ -30,4 +30,25 @@ export class PostgresService {
       throw error;
     }
   }
+
+  async clean() {
+
+    const text = 'DELETE FROM users; DELETE FROM tasks;'
+
+    try{
+      await this.query(text);
+
+      console.log("Database cleared");
+
+      return {
+        message: 'Database Cleaned',
+        success: true
+      }
+    } catch (error) {
+      this.logger.error(
+        `Error executing query: ${error.message}`
+      )
+      throw error;
+    }
+  }
 }
