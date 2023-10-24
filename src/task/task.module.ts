@@ -5,7 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { PostgresModule } from '../postgres/postgres.module';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from '../auth/auth.guard';
-import { JwtModule, JwtService } from '@nestjs/jwt';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   controllers: [TaskController],

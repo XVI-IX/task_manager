@@ -28,12 +28,14 @@ export class AuthGuard implements CanActivate {
       context.getClass()
     ]);
     if (isPublic) {
-      return true
+      return true;
     }
 
     // Extract JWT token from inbound request object
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
+
+    console.log(`from auth guard ${token}`);
 
     if (!token) {
       throw new UnauthorizedException();
@@ -47,8 +49,15 @@ export class AuthGuard implements CanActivate {
         }
       );
 
+      console.log(`Signed token in auth guard`);
+
       // Attach decoded payload to the request object.
       request['user'] = payload;
+
+      console.log(request.user.sub);
+
+      return true;
+
     } catch (error) {
       console.error(error);
       throw new Error(error.message);
@@ -59,6 +68,7 @@ export class AuthGuard implements CanActivate {
     try {
       if (request.headers.authorization) {
         const [type, token] = request.headers.authorization.split(' ') ?? [];
+        console.log(`Token from authorization header: ${token}`);
         return type == 'Bearer' ? token : undefined;
       }
     } catch (error) {

@@ -11,22 +11,24 @@ export class TaskService {
     private psql: PostgresService,
   ) {}
 
-  async getTasks(req: Request) {
+  async getTasks(user_email: string) {
 
-    const query = `SELECT * FROM tasks WHERE user_id = $1`;
+    const query = `SELECT * FROM tasks WHERE user_id = $1;`;
 
     try {
-      const user_email = req['user'].payload.email
-      const user_query = `SELECT * FROM users WHERE email = $1`;
+      const user_query = `SELECT * FROM users WHERE email = $1;`;
       const user_values = [user_email];
 
       const user = await this.psql.query(user_query, user_values);
+
+      console.log(user.rows[0]);
 
       if (!user) {
         throw new NotFoundException("User not found");
       }
 
-      const user_id = user.rows[0].user_id;
+      const user_id = user.rows[0].sub;
+      console.log(user_id);
 
       try {
         const tasks = await this.psql.query(query, [user_id]);
@@ -48,9 +50,7 @@ export class TaskService {
     }
   }
 
-  async createTasks(req: Request, dto: TaskDto) {
-
-    const user_email = req['user'].email;
+  async createTasks(user_email: string, dto: TaskDto): Promise<{}> {
 
     const query = `SELECT * FROM users WHERE email = $1`;
     const values = [user_email];
@@ -75,14 +75,18 @@ export class TaskService {
           dto.user_id, dto.category_id
         ]
 
-        const addTask = this.psql.query(task_query, values);
+        const addTask = await this.psql.query(task_query, values);
 
         if (!addTask) {
           throw new InternalServerErrorException("Please try again");
         }
 
-        return addTask;
-        
+        return {
+          message: "Task added successfully",
+          success: true,
+          statusCode: 201
+        };
+
       } catch (error) {
         console.error(error);
         throw new InternalServerErrorException("Please try again");

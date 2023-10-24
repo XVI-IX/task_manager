@@ -9,7 +9,7 @@ export class TaskDto {
   description: string;
 
   @IsDate()
-  due_date: Date;
+  due_date: string;
 
   @IsInt()
   priority: number;

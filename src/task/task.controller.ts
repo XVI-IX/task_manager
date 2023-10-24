@@ -1,12 +1,15 @@
-import { Controller, Get, Post, Param, Patch, Delete, Req, Body, UseGuards } from '@nestjs/common';
+import { 
+  Controller, Get, Post,
+  Param, Patch, Delete,
+  Req, Body, UseGuards } from '@nestjs/common';
+  
+import { Request } from 'express';
 import { TaskService } from './task.service';
 import { TaskDto } from './dto/task.dto';
-import { PostgresService } from 'src/postgres/postgres.service';
-import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from '../auth/auth.guard';
 
-@Controller('tasks')
 @UseGuards(AuthGuard)
+@Controller('tasks')
 export class TaskController {
 
   constructor(
@@ -15,26 +18,36 @@ export class TaskController {
 
   //TODO: Get a list of all tasks for the current user
   @Get()
-  async getTasks(@Req() req: Request) {
-    return this.taskService.getTasks(req);
+  getTasks(@Req() req: Request) {
+    console.log("Get Tasks Route Hit");
+    const user_email = req['user'];
+
+    console.log(`user_email: ${user_email}`);
+
+    return this.taskService.getTasks(user_email);
   }
 
   //TODO: Create a new task
   @Post("create")
-  async createTask (
+  createTask (
     @Req() req: Request, @Body() dto: TaskDto) {
-      return this.taskService.createTasks(req, dto);
+
+      const user_email = req['user'].email;
+
+      console.log(`user_email: ${user_email}`);
+
+      return this.taskService.createTasks(user_email, dto);
   }
 
   //TODO: Get a specific task by ID
   @Get(":id")
-  async getTask(@Param() params) {
+  getTask(@Param() params) {
 
   }
 
   //TODO: Get a list of all tasks with a specific due date
   @Get("due-date/:date")
-  async dueDate(@Param() params) {
+  dueDate(@Param() params) {
 
   }
 
