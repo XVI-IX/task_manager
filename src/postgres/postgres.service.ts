@@ -33,7 +33,7 @@ export class PostgresService {
 
   async clean() {
 
-    const text = 'DELETE FROM users; DELETE FROM tasks;'
+    const text = 'DELETE FROM tasks; DELETE FROM users;'
 
     try{
       await this.query(text);

@@ -49,7 +49,7 @@ describe("App e2e", () => {
 
   });
 
-  describe('Auth', () => {
+  describe('🔒 Auth', () => {
     describe('Register', () => {
       it('Should Register', () => {
         const dto: RegisterDto = {
@@ -96,10 +96,16 @@ describe("App e2e", () => {
     });
   });
 
-  describe('Task', () => {
+  describe('📒 Task', () => {
 
     describe('Get all tasks', () => {
-
+      it('should get all tasks by user', () => {
+        return pactum.spec().get(
+          '/tasks'
+        )
+        .withBearerToken(authToken)
+        .expectStatus(200);
+      });
     });
 
     describe('Create Tasks', () => {

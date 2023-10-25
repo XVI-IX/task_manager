@@ -1,7 +1,7 @@
 import { 
   Controller, Get, Post,
   Param, Patch, Delete,
-  Req, Body, UseGuards } from '@nestjs/common';
+  Req, Body, UseGuards, HttpCode } from '@nestjs/common';
 
 import { Request } from 'express';
 import { TaskService } from './task.service';
@@ -17,6 +17,7 @@ export class TaskController {
   ) {}
 
   //TODO: Get a list of all tasks for the current user
+  @HttpCode(200)
   @Get()
   getTasks(@Req() req: Request) {
     console.log("Get Tasks Route Hit");
