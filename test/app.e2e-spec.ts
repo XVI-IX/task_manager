@@ -147,7 +147,24 @@ describe("App e2e", () => {
 
     describe('Get a list of all tasks with a specific due date', () => {});
 
-    describe('Update a specific task', () => {});
+    describe('Update a specific task', () => {
+      it('Should update task with specified id', () => {
+        const dto: TaskDto = {
+          title: "Task Title 2",
+          description: "Task Description 2",
+          due_date: "2023-12-23",
+          priority: 1,
+          category_id: 2
+      }
+
+      return pactum.spec().patch(
+        `/tasks/${taskId}/update`
+      )
+      .withBearerToken(authToken)
+      .withBody(dto)
+      .expectStatus(200);
+      });
+    });
 
     describe('Delete a specific task', () => {});
 
