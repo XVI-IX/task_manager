@@ -165,4 +165,36 @@ export class TaskService {
       throw new NotFoundException("User not Found");
     }
   }
+
+  async deleteTask(user_email: string, dto: TaskDto, task_id) {
+    try {
+      const user = await this.psql.getUser(user_email);
+      const query = `DELETE FROM tasks 
+                     WHERE task_id = $1 AND user_id = $2
+                     RETURNING *;`
+      const value = [
+        task_id, user.user_id
+      ]
+
+      try {
+        let result = await this.psql.query(query, value);
+        result = result.rows[0];
+
+        return {
+          message: "Tasks deleted successfully",
+          success: true,
+          statusCode: 200,
+          task: result
+
+        }
+
+      } catch (error) {
+        console.error(error);
+        throw new InternalServerErrorException(error.message);
+      }
+    } catch (error) {
+      console.error(error.message);
+      throw new InternalServerErrorException("There seems to be a proble from our end. Please try again.")
+    }
+  }
 }

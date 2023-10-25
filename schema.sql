@@ -26,3 +26,14 @@ CREATE TABLE IF NOT EXISTS tasks (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Validation Function.
+CREATE OR REPLACE FUNCTION validate_future_date(date_to_check DATE) RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN date_to_check >= CURRENT_DATE;
+END;
+$$ LANGUAGE plpgsql;
+
+ALTER TABLE tasks
+ADD CONSTRAINT check_future_date
+CHECK (validate_future_date(due_date));

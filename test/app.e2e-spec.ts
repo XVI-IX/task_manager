@@ -166,7 +166,15 @@ describe("App e2e", () => {
       });
     });
 
-    describe('Delete a specific task', () => {});
+    describe('Delete a specific task', () => {
+      it('Should delete specified task', () => {
+        return pactum.spec().delete(
+          `/tasks/${taskId}/delete`
+        )
+        .withBearerToken(authToken)
+        .expectStatus(200);
+      })
+    });
 
     describe('Get tasks with specified priority', () => {});
   });
