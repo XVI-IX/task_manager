@@ -27,12 +27,12 @@ export class TaskService {
         throw new NotFoundException("User not found");
       }
 
-      const user_id = user.rows[0].sub;
+      const user_id = user.rows[0].user_id;
       console.log(user_id);
 
       try {
         const tasks = await this.psql.query(query, [user_id]);
-        const task_data = tasks.row;
+        const task_data = tasks.rows;
 
         return {
           success: true,
@@ -42,7 +42,7 @@ export class TaskService {
 
       } catch (error) {
         console.error(error);
-        throw new Error(error.message);
+        throw new NotFoundException(error.message);
       }
     } catch (error) {
       console.error(error.message);
@@ -54,6 +54,12 @@ export class TaskService {
 
     const query = `SELECT * FROM users WHERE email = $1`;
     const values = [user_email];
+
+    // try{
+    //   dto['due_date'] = new Date(dto.due_date);
+    // } catch (error) {
+    //   console.error(error);
+    // }
 
     try {
       const result = await this.psql.query(query, values);
@@ -95,5 +101,9 @@ export class TaskService {
       console.error(error)
       throw new Error(error.message);
     }
+  }
+
+  async getTask(user_email: string, id: number) {
+    
   }
 }

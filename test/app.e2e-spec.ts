@@ -107,7 +107,7 @@ describe("App e2e", () => {
         const dto: TaskDto = {
           title: 'Task Title',
           description: 'Task Description',
-          due_date: new Date(),
+          due_date: "2023-10-23",
           priority: 0,
           category_id: 1
         }

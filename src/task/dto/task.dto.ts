@@ -8,7 +8,7 @@ export class TaskDto {
   @IsString()
   description: string;
 
-  @IsDate()
+  @IsString()
   due_date: string;
 
   @IsInt()

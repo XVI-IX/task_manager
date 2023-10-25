@@ -2,7 +2,7 @@ import {
   Controller, Get, Post,
   Param, Patch, Delete,
   Req, Body, UseGuards } from '@nestjs/common';
-  
+
 import { Request } from 'express';
 import { TaskService } from './task.service';
 import { TaskDto } from './dto/task.dto';
@@ -20,7 +20,7 @@ export class TaskController {
   @Get()
   getTasks(@Req() req: Request) {
     console.log("Get Tasks Route Hit");
-    const user_email = req['user'];
+    const user_email = req['user'].email;
 
     console.log(`user_email: ${user_email}`);
 
@@ -41,8 +41,11 @@ export class TaskController {
 
   //TODO: Get a specific task by ID
   @Get(":id")
-  getTask(@Param() params) {
+  getTask(@Req() req: Request, @Param() params) {
+    const id = params.id;
+    const user_email = req['user'].email;
 
+    return this.taskService.getTask(user_email, id);
   }
 
   //TODO: Get a list of all tasks with a specific due date
