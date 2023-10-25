@@ -1,5 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, Req } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Request } from 'express';
 import { Pool } from 'pg';
 
 @Injectable()
@@ -27,6 +28,28 @@ export class PostgresService {
       this.logger.error(
         `Error executing query: ${error.message}`
       );
+      throw error;
+    }
+  }
+
+  async getUser(user_email): Promise<any> {
+    const user_query = `SELECT * FROM users WHERE email = $1`;
+    const user_values = [user_email];
+
+    try {
+      let result = await this.pool.query(user_query, user_values);
+      result = result.rows[0];
+
+      if (!result) {
+        throw new NotFoundException("User not found");
+      }
+
+      return result;
+    } catch (error) {
+      this.logger.error(
+        `Error executing query: ${error.message}`
+      );
+
       throw error;
     }
   }

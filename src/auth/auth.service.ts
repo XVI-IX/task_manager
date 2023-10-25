@@ -66,8 +66,6 @@ export class AuthService {
         expiresIn: this.config.get('EXPIRES_IN')
       });
 
-      console.log(token);
-
       return {
         access_token: token
       };

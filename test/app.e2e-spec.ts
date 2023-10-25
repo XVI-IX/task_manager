@@ -14,6 +14,7 @@ describe("App e2e", () => {
   let configService: ConfigService;
   let psql: PostgresService;
   let authToken: string;
+  let taskId: number;
 
   beforeAll( async () => {
     process.env.NODE_ENV = 'test';
@@ -104,12 +105,13 @@ describe("App e2e", () => {
           '/tasks'
         )
         .withBearerToken(authToken)
-        .expectStatus(200);
+        .expectStatus(200)
+        .end();
       });
     });
 
     describe('Create Tasks', () => {
-      it('Should create task', () => {
+      it('Should create task', async () => {
         const dto: TaskDto = {
           title: 'Task Title',
           description: 'Task Description',
@@ -118,17 +120,30 @@ describe("App e2e", () => {
           category_id: 1
         }
 
-        return pactum.spec().post(
+        const result = await pactum.spec().post(
           '/tasks/create'
         )
         .withBearerToken(authToken)
         .withBody(dto)
-        .expectStatus(201);
+        .expectStatus(201)
+        .end();
          
+        taskId = result.body.task.task_id;
+
+        return result;
       })
     });
 
-    describe('Get a specific task by ID', () => {});
+    describe('Get a specific task by ID', () => {
+      it('Should get task with :id', () => {
+
+        return pactum.spec().get(
+          `/tasks/${taskId}`
+        )
+        .withBearerToken(authToken)
+        .expectStatus(200);
+      })
+    });
 
     describe('Get a list of all tasks with a specific due date', () => {});
 

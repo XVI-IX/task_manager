@@ -16,19 +16,9 @@ export class TaskService {
     const query = `SELECT * FROM tasks WHERE user_id = $1;`;
 
     try {
-      const user_query = `SELECT * FROM users WHERE email = $1;`;
-      const user_values = [user_email];
 
-      const user = await this.psql.query(user_query, user_values);
-
-      console.log(user.rows[0]);
-
-      if (!user) {
-        throw new NotFoundException("User not found");
-      }
-
-      const user_id = user.rows[0].user_id;
-      console.log(user_id);
+      const user = await this.psql.getUser(user_email);
+      const user_id = user.user_id;
 
       try {
         const tasks = await this.psql.query(query, [user_id]);
@@ -51,19 +41,9 @@ export class TaskService {
   }
 
   async createTasks(user_email: string, dto: TaskDto): Promise<{}> {
-
-    const query = `SELECT * FROM users WHERE email = $1`;
-    const values = [user_email];
-
-    // try{
-    //   dto['due_date'] = new Date(dto.due_date);
-    // } catch (error) {
-    //   console.error(error);
-    // }
-
     try {
-      const result = await this.psql.query(query, values);
-      const user_id = result.rows[0].user_id;
+      const result = await this.psql.getUser(user_email);
+      const user_id = result.user_id;
 
       if (!user_id) {
         throw new Error();
@@ -74,23 +54,25 @@ export class TaskService {
       try {
         const task_query = `
         INSERT INTO tasks (title, description, due_date, priority, user_id, category_id)
-        VALUES ($1, $2, $3, $4, $5, $6)`;
+        VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`;
         const values = [
           dto.title, dto.description,
           dto.due_date, dto.priority,
           dto.user_id, dto.category_id
         ]
 
-        const addTask = await this.psql.query(task_query, values);
+        let result = await this.psql.query(task_query, values);
+        result = result.rows[0];
 
-        if (!addTask) {
+        if (!result) {
           throw new InternalServerErrorException("Please try again");
         }
 
         return {
           message: "Task added successfully",
           success: true,
-          statusCode: 201
+          statusCode: 201,
+          task: result
         };
 
       } catch (error) {
@@ -104,6 +86,41 @@ export class TaskService {
   }
 
   async getTask(user_email: string, id: number) {
-    
+    try {
+      const user = await this.psql.getUser(user_email);
+      const user_id = user.user_id;
+
+      const query = `SELECT * FROM tasks
+      WHERE user_id = $1 AND task_id = $2`;
+      const values = [user_id, id];
+
+      try {
+        let result = await this.psql.query(query, values);
+        result = result.rows
+
+        if (!result) {
+          return {
+            message: "No task with id found",
+            success: true,
+            statusCode: 404,
+            result: result
+          }
+        }
+
+        return {
+          message: "Task found",
+          success: true,
+          statusCode: 200,
+          result: result
+        }
+      } catch (error) {
+        throw new InternalServerErrorException("Please try again.")
+      }
+
+
+    } catch (error) {
+      console.error(error);
+      throw new NotFoundException(error.message);
+    }
   }
 }

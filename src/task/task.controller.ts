@@ -20,11 +20,7 @@ export class TaskController {
   @HttpCode(200)
   @Get()
   getTasks(@Req() req: Request) {
-    console.log("Get Tasks Route Hit");
     const user_email = req['user'].email;
-
-    console.log(`user_email: ${user_email}`);
-
     return this.taskService.getTasks(user_email);
   }
 
@@ -32,11 +28,7 @@ export class TaskController {
   @Post("create")
   createTask (
     @Req() req: Request, @Body() dto: TaskDto) {
-
       const user_email = req['user'].email;
-
-      console.log(`user_email: ${user_email}`);
-
       return this.taskService.createTasks(user_email, dto);
   }
 
