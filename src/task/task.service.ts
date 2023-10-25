@@ -128,6 +128,41 @@ export class TaskService {
 
   }
 
-  async updateTask(user_email:string) {
+  async updateTask(user_email:string, dto: TaskDto, task_id) {
+    try {
+      const user = await this.psql.getUser(user_email);
+      const query = `SELECT * FROM tasks 
+      WHERE task_id = $1 AND user_id = $2`;
+      const values = [task_id, user.user_id];
+
+      try {
+        const update_query = `UPDATE tasks
+        SET title = $1, description = $2,
+        due_date = $3, priority = $4,
+        category_id = $5,
+        updated_at = NOW ()
+        WHERE task_id = $6
+        RETURNING *;`
+        const update_values = [
+          dto.title, dto.description,
+          dto.due_date, dto.priority,
+          dto.category_id, task_id
+        ]
+
+        const result = await this.psql.query(update_query, update_values);
+
+        return {
+          message: "Update Successful",
+          success: true,
+          task: result.rows[0]
+        }
+      } catch (error) {
+        console.error(error);
+        throw new InternalServerErrorException(error.message);
+      }
+    } catch (error) {
+      console.error(error.message);
+      throw new NotFoundException("User not Found");
+    }
   }
 }

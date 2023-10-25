@@ -6,7 +6,7 @@ import {
 import { TaskService } from './task.service';
 import { TaskDto } from './dto/task.dto';
 import { AuthGuard } from '../auth/auth.guard';
-import { User } from 'src/decorators/user.decorator';
+import { User } from '../decorators/user.decorator';
 
 @UseGuards(AuthGuard)
 @Controller('tasks')
@@ -48,8 +48,8 @@ export class TaskController {
 
   //TODO: Update a specific task
   @Patch(":id/update")
-  updateTask(@User() user, @Param() params) {    
-    return this.taskService.updateTask(user.email);
+  updateTask(@User() user, @Param('id') id, @Body() dto: TaskDto) {    
+    return this.taskService.updateTask(user.email, dto, id);
   }
 
   //TODO: Delete a specific task
