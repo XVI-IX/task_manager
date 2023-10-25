@@ -123,4 +123,11 @@ export class TaskService {
       throw new NotFoundException(error.message);
     }
   }
+
+  async dueDate(user_email: string, date: string) {
+
+  }
+
+  async updateTask(user_email:string) {
+  }
 }
