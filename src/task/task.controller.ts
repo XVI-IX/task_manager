@@ -60,7 +60,7 @@ export class TaskController {
 
   //TODO: Get a list of all tasks with a specific priority
   @Get("priority/:priority")
-  getPriorityList(@Param() params) {
-    
+  getPriorityList(@User() user, @Param('priority') priority) {
+    return this.taskService.getPriorityList(user.email, priority)
   }
 }

@@ -197,4 +197,42 @@ export class TaskService {
       throw new InternalServerErrorException("There seems to be a proble from our end. Please try again.")
     }
   }
+
+  async getPriorityList(user_email: string, priority: number) {
+    try {
+      const user = await this.psql.getUser(user_email);
+      const query = `SELECT * FROM tasks
+                     WHERE priority = $1 AND user_id = $2`;
+      const value = [
+        priority, user.user_id
+      ];
+
+      try {
+        let result = await this.psql.query(query, value);
+        result = result.rows;
+
+        if (!result) {
+          return {
+            message: "No Task with specified priority was found.",
+            success: true,
+            statusCode: 404,
+            tasks: []
+          }
+        }
+
+        return {
+          message: 'Tasks retrieved successfully',
+          success: true,
+          statusCode: 200,
+          tasks: result
+        }
+      } catch (error) {
+        console.error(error);
+        throw new Error(error);
+      }
+    } catch (error) {
+      console.error(error);
+      throw new Error(error);
+    }
+  }
 }

@@ -166,6 +166,17 @@ describe("App e2e", () => {
       });
     });
 
+    describe('Get tasks with specified priority', () => {
+      it('Should get tasks with specified priority', () => {
+
+        return pactum.spec().get(
+          `/tasks/priority/1`
+        )
+        .withBearerToken(authToken)
+        .expectStatus(200);
+    });
+  });
+
     describe('Delete a specific task', () => {
       it('Should delete specified task', () => {
         return pactum.spec().delete(
@@ -173,10 +184,8 @@ describe("App e2e", () => {
         )
         .withBearerToken(authToken)
         .expectStatus(200);
-      })
+      });
     });
-
-    describe('Get tasks with specified priority', () => {});
   });
 
   describe('User', () => {
