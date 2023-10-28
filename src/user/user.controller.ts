@@ -1,6 +1,7 @@
 import { Controller, Get, Req } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from '../decorators/user.decorator';
+import { Public } from 'src/decorators/public.decorator';
 
 @Controller()
 export class UserController {
@@ -19,5 +20,11 @@ export class UserController {
   @Get('dashboard')
   async getDashboard(@User() user) {
     return this.userService.dashboard(user.email);
+  }
+
+  @Public()
+  @Get('test')
+  async testUser(): Promise<any> {
+    return this.userService.testUser();
   }
 }

@@ -14,54 +14,141 @@ export class UserService {
   ) {}
 
   async profile(user_email: string) {
-     try {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: {
+          email: user_email
+        }
+      });
 
-      const user = await this.psql.getUser(user_email);
+      if (!user) {
+        throw new NotFoundException("User not found");
+      }
+
       delete user.password;
 
-      try {
-        const query = `
-        SELECT * FROM tasks
-        WHERE user_id = $1;
-        `
-      const values = [user.user_id];
-      const result = await this.psql.query(query, values);
-
-      if (!result) {
-        throw new NotFoundException("Tasks for user not found")
-      }
-
-      if (result.rows.length == 0) {
-        return {
-          message: "No tasks for user.",
-          success: true,
-          statusCode: 404,
-          user: user,
-          tasks: [],
-          number_of_tasks: result.rows.length
-        }
-      }
-
-      return {
-        message: "User Profile",
-        success: true,
-        statusCode: 200,
-        user: user,
-        tasks: result.rows,
-        number_of_tasks: result.rows.length
-      }
-
-      } catch (error) {
-        console.error(error);
-        throw new InternalServerErrorException(error.message);
-      }
-     } catch (error) {
-      console.error(error.message);
-      throw new InternalServerErrorException(error);
-     }
+      return user;
+    } catch (error) {
+      console.error(error);
+      throw new InternalServerErrorException(error.message);
+    } 
   }
 
   async dashboard(user_email: string) {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: {
+          email: user_email
+        }
+      });
+
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      delete user.password;
+
+      try {
+        const tasks = await this.prisma.task.findMany({
+          where: {
+            user_id: user.user_id
+          }
+        });
+
+        if (!tasks) {
+          return {
+            user: {
+              message: "User Data retrieved Successfully",
+              data: user,
+            },
+            tasks: {
+              message: "Task Data could not be retrieved",
+              tasks: []
+            },
+            success: "partial",
+            statusCode: 207
+          }
+        }
+
+        if (tasks.length == 0) {
+          return {
+            message: "No tasks present for User",
+            user: user,
+            tasks: [],
+            statusCodes: 200,
+            success: true
+          }
+        }
+
+        return {
+          message: "Dashboard data retreived successfully",
+          user: user,
+          tasks: tasks,
+          success: true,
+          statusCodes: 200
+        }
+      } catch (error) {
+        console.error(error);
+        throw new InternalServerErrorException("Please try again");
+      }
+
+    } catch (error) {
+      console.error(error);
+      throw new InternalServerErrorException("Please try again later.");
+    }
     
   }
+
+  async testUser() {
+    
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email: "testUser@admin.com"
+      }
+    })
+
+    return user.username;
+  }
 }
+
+
+
+// try {
+//   const tasks = await this.prisma.task.findMany({
+//     where: {
+//       user_id: user.user_id
+//     }
+//   });
+
+//   if (!tasks) {
+//     throw new NotFoundException("Tasks for user not found")
+//   }
+
+//   if (tasks.length == 0) {
+//     return {
+//       message: "No tasks for user.",
+//       success: true,
+//       statusCode: 200,
+//       user: user,
+//       tasks: [],
+//       number_of_tasks: tasks.length
+//     }
+//   }
+
+//   return {
+//     message: "User Profile",
+//     success: true,
+//     statusCode: 200,
+//     user: user,
+//     tasks: tasks,
+//     number_of_tasks: tasks.length
+//   }
+
+//   } catch (error) {
+//     console.error(error);
+//     throw new InternalServerErrorException(error.message);
+//   }
+//  } catch (error) {
+//   console.error(error.message);
+//   throw new InternalServerErrorException(error);
+//  }
