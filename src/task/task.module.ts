@@ -6,6 +6,7 @@ import { PostgresModule } from '../postgres/postgres.module';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from '../auth/auth.guard';
 import { JwtModule } from '@nestjs/jwt';
+import { PrismaModule } from 'src/prisma/prisma.module';
 
 @Module({
   controllers: [TaskController],
@@ -14,7 +15,8 @@ import { JwtModule } from '@nestjs/jwt';
     useClass: AuthGuard
   }],
   imports: [
-    ConfigModule, PostgresModule, JwtModule
+    ConfigModule, PostgresModule, JwtModule,
+    PrismaModule
   ]
 })
 export class TaskModule {}

@@ -1,16 +1,16 @@
 import { Injectable, InternalServerErrorException, NotFoundException, Req, Request } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { PostgresService } from '../postgres/postgres.service';
+// import { ConfigService } from '@nestjs/config';
+// import { PostgresService } from '../postgres/postgres.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { User, Prisma } from '@prisma/client';
+// import { User, Prisma } from '@prisma/client';
 
 @Injectable()
 export class UserService {
 
   constructor(
     private prisma: PrismaService,
-    private config?: ConfigService,
-    private psql?: PostgresService,
+    // private config?: ConfigService,
+    // private psql?: PostgresService,
   ) {}
 
   async profile(user_email: string) {
@@ -110,45 +110,3 @@ export class UserService {
     return user.username;
   }
 }
-
-
-
-// try {
-//   const tasks = await this.prisma.task.findMany({
-//     where: {
-//       user_id: user.user_id
-//     }
-//   });
-
-//   if (!tasks) {
-//     throw new NotFoundException("Tasks for user not found")
-//   }
-
-//   if (tasks.length == 0) {
-//     return {
-//       message: "No tasks for user.",
-//       success: true,
-//       statusCode: 200,
-//       user: user,
-//       tasks: [],
-//       number_of_tasks: tasks.length
-//     }
-//   }
-
-//   return {
-//     message: "User Profile",
-//     success: true,
-//     statusCode: 200,
-//     user: user,
-//     tasks: tasks,
-//     number_of_tasks: tasks.length
-//   }
-
-//   } catch (error) {
-//     console.error(error);
-//     throw new InternalServerErrorException(error.message);
-//   }
-//  } catch (error) {
-//   console.error(error.message);
-//   throw new InternalServerErrorException(error);
-//  }

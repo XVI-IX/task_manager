@@ -2,6 +2,7 @@ import { Injectable, InternalServerErrorException, NotFoundException, Request } 
 import { ConfigService } from '@nestjs/config';
 import { PostgresService } from '../postgres/postgres.service';
 import { TaskDto } from './dto/task.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class TaskService {
@@ -9,34 +10,44 @@ export class TaskService {
   constructor(
     private config: ConfigService,
     private psql: PostgresService,
+    private prisma: PrismaService
   ) {}
 
   async getTasks(user_email: string) {
-
-    const query = `SELECT * FROM tasks WHERE user_id = $1;`;
-
     try {
+      const user = await this.prisma.user.findUnique({
+        where: {
+          email: user_email
+        }
+      });
 
-      const user = await this.psql.getUser(user_email);
-      const user_id = user.user_id;
+      if (!user) {
+        throw new NotFoundException("User does not exist");
+      }
+
+      delete user.password;
 
       try {
-        const tasks = await this.psql.query(query, [user_id]);
-        const task_data = tasks.rows;
+        const tasks = await this.prisma.task.findMany({
+          where: {
+            user_id: user.user_id
+          }
+        });
 
         return {
+          message: "Tasks retrieved successfully",
           success: true,
-          message: "Tasks retrieved",
-          tasks: task_data
+          statusCode: 200,
+          tasks: tasks
         }
-
+        
       } catch (error) {
         console.error(error);
-        throw new NotFoundException(error.message);
+        throw new InternalServerErrorException("Please try again later");
       }
     } catch (error) {
-      console.error(error.message);
-      throw new Error(error.message);
+      console.error(error);
+      throw new InternalServerErrorException(error.message);
     }
   }
 
