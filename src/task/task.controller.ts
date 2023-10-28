@@ -16,49 +16,47 @@ export class TaskController {
     private taskService: TaskService
   ) {}
 
-  //TODO: Get a list of all tasks for the current user
+  //DONE: Get a list of all tasks for the current user
+  // In case there is a query parameter for due_date
   @HttpCode(200)
   @Get()
-  getTasks(@User() user) {
+  getTasks(@User() user, @Query('due_date') due_date?: string) {
+
+    if (due_date) {
+      return this.taskService.dueDate(user.email, due_date);
+    }
+
     return this.taskService.getTasks(user.email);
   }
 
-  //TODO: Create a new task
+  //DONE: Create a new task
   @Post("create")
   createTask (
     @User() user, @Body() dto: TaskDto) {
       return this.taskService.createTasks(user.email, dto);
   }
 
-  //TODO: Get a specific task by ID
+  //DONE: Get a specific task by ID
   @Get(":id")
-  getTask(@User() user, @Param() params) {
-    const id = params.id;
+  getTask(@User() user, @Param('id') task_id: number) {
+    console.log(`Task id ${task_id}`);
 
-    return this.taskService.getTask(user.email, id);
+    return this.taskService.getTask(user.email, task_id);
   }
 
-  //TODO: Get a list of all tasks with a specific due date
-  @Get("due-date")
-  dueDate(@User() user, @Query() query) {
-    const due_date = query.due_date;
-
-    return this.taskService.dueDate(user.email, due_date)
-  }
-
-  //TODO: Update a specific task
+  //DONE: Update a specific task
   @Patch(":id/update")
   updateTask(@User() user, @Param('id') id, @Body() dto: TaskDto) {    
     return this.taskService.updateTask(user.email, dto, id);
   }
 
-  //TODO: Delete a specific task
+  //DONE: Delete a specific task
   @Delete(":id/delete")
   deleteTask(@Param('id') task_id, @User() user, dto: TaskDto) {
     return this.taskService.deleteTask(user.email, dto, task_id);
   }
 
-  //TODO: Get a list of all tasks with a specific priority
+  //DONE: Get a list of all tasks with a specific priority
   @Get("priority/:priority")
   getPriorityList(@User() user, @Param('priority') priority) {
     return this.taskService.getPriorityList(user.email, priority)

@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS tasks (
   task_id SERIAL PRIMARY KEY,
   title VARCHAR(100) NOT NULL,
   description TEXT,
-  due_date TIMESTAMPTZ,
+  due_date DATE,
   priority INTEGER DEFAULT 1,
   user_id INTEGER REFERENCES users(user_id),
   category_id INTEGER REFERENCES categories(category_id),

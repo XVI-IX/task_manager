@@ -85,14 +85,17 @@ export class TaskService {
     }
   }
 
-  async getTask(user_email: string, id: number) {
+  async getTask(user_email: string, task_id: number) {
+
+    console.log(task_id, typeof task_id);
+
     try {
       const user = await this.psql.getUser(user_email);
       const user_id = user.user_id;
 
       const query = `SELECT * FROM tasks
-      WHERE user_id = $1 AND task_id = $2`;
-      const values = [user_id, id];
+      WHERE user_id = $1 AND task_id = $2;`;
+      const values = [user_id, task_id];
 
       try {
         let result = await this.psql.query(query, values);
@@ -114,6 +117,7 @@ export class TaskService {
           result: result
         }
       } catch (error) {
+        console.error(error);
         throw new InternalServerErrorException("Please try again.")
       }
 
@@ -125,15 +129,46 @@ export class TaskService {
   }
 
   async dueDate(user_email: string, date: string) {
+    
+    console.log(`dueDate: ${date}`);
+    try {
 
+      const user = await this.psql.getUser(user_email);
+      const query = `SELECT * FROM tasks
+                     WHERE due_date = $1 AND user_id = $2;`
+      const values = [date, user.user_id];
+
+      try {
+        const tasks = await this.psql.query(query, values);
+
+        if ( !tasks.rows ) {
+          return {
+            message: `No tasks due for ${date}`,
+            success: true,
+            statusCode: 404
+          }
+        }
+
+        return {
+          message: `Tasks due on ${date} found.`,
+          statusCode: 200,
+          tasks: tasks.rows,
+          success: true
+        }
+      } catch (error) {
+        console.error(error);
+        throw new InternalServerErrorException("Please try again");
+      }
+    } catch (error) {
+      console.error(error);
+      console.error(error.message);
+      throw new InternalServerErrorException("Please try again!")
+    }
   }
 
   async updateTask(user_email:string, dto: TaskDto, task_id) {
     try {
       const user = await this.psql.getUser(user_email);
-      const query = `SELECT * FROM tasks 
-      WHERE task_id = $1 AND user_id = $2`;
-      const values = [task_id, user.user_id];
 
       try {
         const update_query = `UPDATE tasks
@@ -141,12 +176,13 @@ export class TaskService {
         due_date = $3, priority = $4,
         category_id = $5,
         updated_at = NOW ()
-        WHERE task_id = $6
+        WHERE task_id = $6 AND user_id = $7
         RETURNING *;`
         const update_values = [
           dto.title, dto.description,
           dto.due_date, dto.priority,
-          dto.category_id, task_id
+          dto.category_id, task_id,
+          user.user_id
         ]
 
         const result = await this.psql.query(update_query, update_values);

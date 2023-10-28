@@ -145,8 +145,6 @@ describe("App e2e", () => {
       })
     });
 
-    describe('Get a list of all tasks with a specific due date', () => {});
-
     describe('Update a specific task', () => {
       it('Should update task with specified id', () => {
         const dto: TaskDto = {
@@ -164,6 +162,20 @@ describe("App e2e", () => {
       .withBody(dto)
       .expectStatus(200);
       });
+    });
+
+    describe('Get a list of all tasks with a specific due date', () => {
+      it("Should get list of tasks due on date", () => {
+
+        return pactum.spec().get(
+          `/tasks/due-date`
+        )
+        .withQueryParams({
+          due_date: "2023-10-23"
+        })
+        .withBearerToken(authToken)
+        .expectStatus(200);
+      })
     });
 
     describe('Get tasks with specified priority', () => {

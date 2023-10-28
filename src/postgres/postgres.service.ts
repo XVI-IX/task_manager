@@ -1,6 +1,5 @@
 import { Injectable, Logger, NotFoundException, Req } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Request } from 'express';
 import { Pool } from 'pg';
 
 @Injectable()
