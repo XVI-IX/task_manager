@@ -6,6 +6,9 @@ import { TaskModule } from './task/task.module';
 import { ConfigModule } from '@nestjs/config';
 import { PostgresModule } from './postgres/postgres.module';
 import { AuthModule } from './auth/auth.module';
+import { PrismaService } from './prisma/prisma.service';
+import { PrismaController } from './prisma/prisma.controller';
+import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
   imports: [
@@ -13,8 +16,8 @@ import { AuthModule } from './auth/auth.module';
     PostgresModule, ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env'
-    }), AuthModule],
-  controllers: [AppController],
-  providers: [AppService],
+    }), AuthModule, PrismaModule],
+  controllers: [AppController, PrismaController],
+  providers: [AppService, PrismaService],
 })
 export class AppModule {}
