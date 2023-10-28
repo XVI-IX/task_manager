@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, Req, Request } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException, Req, Request } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PostgresService } from '../postgres/postgres.service';
 
@@ -10,44 +10,55 @@ export class UserService {
     private psql?: PostgresService
   ) {}
 
-  async profile(@Req() req: Request) {
-    const user_query = `SELECT * FROM users WHERE email = $1;`
-    const user_values = [req['user'].payload.email];
+  async profile(user_email: string) {
+     try {
 
+      const user = await this.psql.getUser(user_email);
+      delete user.password;
 
+      try {
+        const query = `
+        SELECT * FROM tasks
+        WHERE user_id = $1;
+        `
+      const values = [user.user_id];
+      const result = await this.psql.query(query, values);
 
-    try {
-      const user = await this.psql.query(user_query, user_values);
-
-      if (!user) {
-        throw new NotFoundException(`Could not find user`);
+      if (!result) {
+        throw new NotFoundException("Tasks for user not found")
       }
 
-      const user_data = user.rows[0];
-      const tasks_query = `SELECT * FROM tasks WHERE user_id = $1`
-      const task_values = [user_data.user_id];
-      
-      try {
-        const tasks = await this.psql.query(tasks_query, task_values);
-        const tasks_data = tasks.rows[0];
-
+      if (result.rows.length == 0) {
         return {
-          user: user_data,
-          tasks: tasks_data
+          message: "No tasks for user.",
+          success: true,
+          statusCode: 404,
+          user: user,
+          tasks: [],
+          number_of_tasks: result.rows.length
         }
+      }
+
+      return {
+        message: "User Profile",
+        success: true,
+        statusCode: 200,
+        user: user,
+        tasks: result.rows,
+        number_of_tasks: result.rows.length
+      }
+
       } catch (error) {
         console.error(error);
-        throw new Error(error.message);
+        throw new InternalServerErrorException(error.message);
       }
-
-
-    } catch (error){
-      console.error(error);
-      throw new Error(error.message);
-    }
+     } catch (error) {
+      console.error(error.message);
+      throw new InternalServerErrorException(error);
+     }
   }
 
-  async dashboard() {
+  async dashboard(user_email: string) {
     
   }
 }

@@ -168,7 +168,7 @@ describe("App e2e", () => {
       it("Should get list of tasks due on date", () => {
 
         return pactum.spec().get(
-          `/tasks/due-date`
+          `/tasks`
         )
         .withQueryParams({
           due_date: "2023-10-23"

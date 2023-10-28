@@ -1,7 +1,7 @@
 import { 
   Controller, Get, Post,
   Param, Patch, Delete,
-  Req, Body, UseGuards, HttpCode, Query } from '@nestjs/common';
+  Body, UseGuards, HttpCode, Query } from '@nestjs/common';
 
 import { TaskService } from './task.service';
 import { TaskDto } from './dto/task.dto';
