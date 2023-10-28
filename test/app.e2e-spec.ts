@@ -200,17 +200,35 @@ describe("App e2e", () => {
     });
   });
 
-  describe('User', () => {
+  describe('👤 User', () => {
 
-    describe('Get User Profile', () => {});
+    describe('Get User Profile', () => {
+      it("Should get user profile", () => {
 
-    describe('Get User Dashboard', () => {});
+        return pactum.spec().get(
+          '/profile'
+        )
+        .withBearerToken(authToken)
+        .expectStatus(200);
+      }) 
+    });
+
+    describe('Get User Dashboard', () => {
+      it('should get content for dashboard', () => {
+
+        return pactum.spec().get(
+          '/dashboard'
+        )
+        .withBearerToken(authToken)
+        .expectStatus(200);
+      })
+    });
   });
 
   afterAll(() => {
     app.close();
   });
 
-  it.todo("Should pass");
+  // it.todo("Should pass");
   
 });
