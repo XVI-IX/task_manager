@@ -92,44 +92,81 @@ export class TaskService {
 
   async getTask(user_email: string, task_id: number) {
 
-    console.log(task_id, typeof task_id);
+    // console.log(task_id, typeof task_id);
 
+    // try {
+    //   const user = await this.psql.getUser(user_email);
+    //   const user_id = user.user_id;
+
+    //   const query = `SELECT * FROM tasks
+    //   WHERE user_id = $1 AND task_id = $2;`;
+    //   const values = [user_id, task_id];
+
+    //   try {
+    //     let result = await this.psql.query(query, values);
+    //     result = result.rows
+
+    //     if (!result) {
+    //       return {
+    //         message: "No task with id found",
+    //         success: true,
+    //         statusCode: 404,
+    //         result: result
+    //       }
+    //     }
+
+    //     return {
+    //       message: "Task found",
+    //       success: true,
+    //       statusCode: 200,
+    //       result: result
+    //     }
+    //   } catch (error) {
+    //     console.error(error);
+    //     throw new InternalServerErrorException("Please try again.")
+    //   }
+
+
+    // } catch (error) {
+    //   console.error(error);
+    //   throw new NotFoundException(error.message);
+    // }
     try {
-      const user = await this.psql.getUser(user_email);
-      const user_id = user.user_id;
+      const user = await this.prisma.user.findUnique({
+        where: {
+          email: user_email
+        }
+      });
 
-      const query = `SELECT * FROM tasks
-      WHERE user_id = $1 AND task_id = $2;`;
-      const values = [user_id, task_id];
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
 
       try {
-        let result = await this.psql.query(query, values);
-        result = result.rows
-
-        if (!result) {
-          return {
-            message: "No task with id found",
-            success: true,
-            statusCode: 404,
-            result: result
+        const task = await this.prisma.task.findUnique({
+          where: {
+            user_id: user.user_id,
+            task_id: task_id
           }
+        })
+
+        if (!task) {
+          throw new NotFoundException("Tasks not Found");
         }
 
         return {
-          message: "Task found",
+          message: "Task retrieved successfully",
           success: true,
           statusCode: 200,
-          result: result
+          task: task
         }
+        
       } catch (error) {
         console.error(error);
-        throw new InternalServerErrorException("Please try again.")
+        throw new InternalServerErrorException("Please try again");
       }
-
-
     } catch (error) {
-      console.error(error);
-      throw new NotFoundException(error.message);
+      console.error(error.message);
     }
   }
 
