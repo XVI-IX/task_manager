@@ -51,48 +51,6 @@ export class TaskService {
   }
 
   async createTasks(user_email: string, dto: TaskDto): Promise<{}> {
-    // try {
-    //   const result = await this.psql.getUser(user_email);
-    //   const user_id = result.user_id;
-
-    //   if (!user_id) {
-    //     throw new Error();
-    //   }
-
-    //   dto['user_id'] = user_id;
-
-    //   try {
-    //     const task_query = `
-    //     INSERT INTO tasks (title, description, due_date, priority, user_id, category_id)
-    //     VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`;
-    //     const values = [
-    //       dto.title, dto.description,
-    //       dto.due_date, dto.priority,
-    //       dto.user_id, dto.category_id
-    //     ]
-
-    //     let result = await this.psql.query(task_query, values);
-    //     result = result.rows[0];
-
-    //     if (!result) {
-    //       throw new InternalServerErrorException("Please try again");
-    //     }
-
-    //     return {
-    //       message: "Task added successfully",
-    //       success: true,
-    //       statusCode: 201,
-    //       task: result
-    //     };
-
-    //   } catch (error) {
-    //     console.error(error);
-    //     throw new InternalServerErrorException("Please try again");
-    //   }
-    // } catch (error) {
-    //   console.error(error)
-    //   throw new Error(error.message);
-    // }
     try {
       const user = await this.prisma.user.findUnique({
         where: {
