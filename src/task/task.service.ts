@@ -188,38 +188,85 @@ export class TaskService {
   }
 
   async updateTask(user_email:string, dto: TaskDto, task_id) {
+    // try {
+    //   const user = await this.psql.getUser(user_email);
+
+    //   try {
+    //     const update_query = `UPDATE tasks
+    //     SET title = $1, description = $2,
+    //     due_date = $3, priority = $4,
+    //     category_id = $5,
+    //     updated_at = NOW ()
+    //     WHERE task_id = $6 AND user_id = $7
+    //     RETURNING *;`
+    //     const update_values = [
+    //       dto.title, dto.description,
+    //       dto.due_date, dto.priority,
+    //       dto.category_id, task_id,
+    //       user.user_id
+    //     ]
+
+    //     const result = await this.psql.query(update_query, update_values);
+
+    //     return {
+    //       message: "Update Successful",
+    //       success: true,
+    //       task: result.rows[0]
+    //     }
+    //   } catch (error) {
+    //     console.error(error);
+    //     throw new InternalServerErrorException(error.message);
+    //   }
+    // } catch (error) {
+    //   console.error(error.message);
+    //   throw new NotFoundException("User not Found");
+    // }
+
+    // const date = moment(dto.due_date).format("YYYY-MM-DD[T]HH:mm:ss.SSS[Z]");
     try {
-      const user = await this.psql.getUser(user_email);
+      const user = await this.prisma.user.findUnique({
+        where: {
+          email: user_email
+        }
+      })
+
+      if (!user) {
+        throw new NotFoundException("User could not be found");
+      }
 
       try {
-        const update_query = `UPDATE tasks
-        SET title = $1, description = $2,
-        due_date = $3, priority = $4,
-        category_id = $5,
-        updated_at = NOW ()
-        WHERE task_id = $6 AND user_id = $7
-        RETURNING *;`
-        const update_values = [
-          dto.title, dto.description,
-          dto.due_date, dto.priority,
-          dto.category_id, task_id,
-          user.user_id
-        ]
+        let task = await this.prisma.task.findUnique({
+          where: {
+            user_id: user.user_id,
+            task_id: task_id
+          }
+        });
 
-        const result = await this.psql.query(update_query, update_values);
+       
+
+        task.title = dto.title;
+        task.description = dto.description;
+        task.due_date = new Date(dto.due_date);
+        task.priority = dto.priority;
+
+        const update = await this.prisma.task.update({
+          where: {
+            user_id: user.user_id,
+            task_id: task.task_id
+          },
+          data: task
+        });
 
         return {
-          message: "Update Successful",
-          success: true,
-          task: result.rows[0]
+          update
         }
       } catch (error) {
         console.error(error);
         throw new InternalServerErrorException(error.message);
       }
     } catch (error) {
-      console.error(error.message);
-      throw new NotFoundException("User not Found");
+      console.error(error);
+      throw new InternalServerErrorException(error.message);
     }
   }
 
