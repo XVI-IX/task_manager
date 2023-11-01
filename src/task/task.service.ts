@@ -14,6 +14,24 @@ export class TaskService {
     private prisma: PrismaService
   ) {}
 
+  private async getUserByEmail(email: string) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email: email
+      },
+      select: {
+        user_id: true,
+        username: true
+      }
+    });
+
+    if (!user) {
+      throw new NotFoundException("User not found");
+    }
+
+    return user;
+  }
+
   async getTasks(user_email: string) {
     try {
       const user = await this.prisma.user.findUnique({
