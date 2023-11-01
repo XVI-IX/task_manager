@@ -1,7 +1,7 @@
 import { Injectable, InternalServerErrorException, NotFoundException, Req, Request } from '@nestjs/common';
 // import { ConfigService } from '@nestjs/config';
 // import { PostgresService } from '../postgres/postgres.service';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 // import { User, Prisma } from '@prisma/client';
 
 @Injectable()

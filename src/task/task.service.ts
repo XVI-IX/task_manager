@@ -2,7 +2,9 @@ import { Injectable, InternalServerErrorException, NotFoundException, Request } 
 import { ConfigService } from '@nestjs/config';
 import { PostgresService } from '../postgres/postgres.service';
 import { TaskDto } from './dto/task.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
+
+import  * as moment from 'moment';
 
 @Injectable()
 export class TaskService {
@@ -62,6 +64,9 @@ export class TaskService {
         throw new NotFoundException("User not found");
       }
 
+      dto.user_id = user.user_id;
+      let due_date = moment(dto.due_date);
+      dto.due_date = due_date.format("YYYY-MM-DD[T]HH:mm:ss.SSS[Z]");
       delete user.password;
 
       try {
@@ -74,6 +79,8 @@ export class TaskService {
           throw new InternalServerErrorException("Please try again");
         }
 
+        console.log(task);
+
         return {
           message: "Task created successfully",
           success: true,
@@ -82,6 +89,7 @@ export class TaskService {
         }
       } catch (error) {
         console.error(error);
+        throw new InternalServerErrorException("Task could not be created successfully");
       }
       
     } catch (error) {
@@ -91,46 +99,6 @@ export class TaskService {
   }
 
   async getTask(user_email: string, task_id: number) {
-
-    // console.log(task_id, typeof task_id);
-
-    // try {
-    //   const user = await this.psql.getUser(user_email);
-    //   const user_id = user.user_id;
-
-    //   const query = `SELECT * FROM tasks
-    //   WHERE user_id = $1 AND task_id = $2;`;
-    //   const values = [user_id, task_id];
-
-    //   try {
-    //     let result = await this.psql.query(query, values);
-    //     result = result.rows
-
-    //     if (!result) {
-    //       return {
-    //         message: "No task with id found",
-    //         success: true,
-    //         statusCode: 404,
-    //         result: result
-    //       }
-    //     }
-
-    //     return {
-    //       message: "Task found",
-    //       success: true,
-    //       statusCode: 200,
-    //       result: result
-    //     }
-    //   } catch (error) {
-    //     console.error(error);
-    //     throw new InternalServerErrorException("Please try again.")
-    //   }
-
-
-    // } catch (error) {
-    //   console.error(error);
-    //   throw new NotFoundException(error.message);
-    // }
     try {
       const user = await this.prisma.user.findUnique({
         where: {
@@ -139,6 +107,7 @@ export class TaskService {
       });
 
       if (!user) {
+        console.log("User could not be found");
         throw new NotFoundException('User not found');
       }
 
@@ -167,44 +136,54 @@ export class TaskService {
       }
     } catch (error) {
       console.error(error.message);
+      throw new InternalServerErrorException("Please try again.");
     }
   }
 
   async dueDate(user_email: string, date: string) {
-    
-    console.log(`dueDate: ${date}`);
     try {
+      console.log(`Date: ${date}`);
 
-      const user = await this.psql.getUser(user_email);
-      const query = `SELECT * FROM tasks
-                     WHERE due_date = $1 AND user_id = $2;`
-      const values = [date, user.user_id];
+      const user = await this.prisma.user.findUnique({
+        where: {
+          email: user_email
+        }
+      });
+
+      if (!user) {
+        throw new InternalServerErrorException("Please try again later.")
+      }
 
       try {
-        const tasks = await this.psql.query(query, values);
+        const tasks = await this.prisma.task.findMany({
+          where: {
+            user_id: user.user_id,
+            due_date: date
+          }
+        });
 
-        if ( !tasks.rows ) {
+        if (tasks.length === 0) {
           return {
-            message: `No tasks due for ${date}`,
+            message: `No tasks due on ${date}`,
             success: true,
-            statusCode: 404
+            statusCode: 200,
+            tasks: tasks
           }
         }
 
         return {
-          message: `Tasks due on ${date} found.`,
+          message: `Tasks due on ${date}`,
+          success: true,
           statusCode: 200,
-          tasks: tasks.rows,
-          success: true
+          tasks: tasks
         }
       } catch (error) {
         console.error(error);
-        throw new InternalServerErrorException("Please try again");
+        throw new InternalServerErrorException(error.message);
       }
     } catch (error) {
       console.error(error);
-      console.error(error.message);
-      throw new InternalServerErrorException("Please try again!")
+      throw new InternalServerErrorException(error.message);
     }
   }
 
