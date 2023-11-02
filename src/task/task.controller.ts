@@ -55,8 +55,8 @@ export class TaskController {
 
   //DONE: Delete a specific task
   @Delete(":id/delete")
-  deleteTask(@Param('id', ParseIntPipe) task_id: number, @User() user, dto: TaskDto) {
-    return this.taskService.deleteTask(user.email, dto, task_id);
+  deleteTask(@Param('id', ParseIntPipe) task_id: number, @User() user) {
+    return this.taskService.deleteTask(user.email, task_id);
   }
 
   //DONE: Get a list of all tasks with a specific priority

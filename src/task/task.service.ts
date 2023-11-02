@@ -34,18 +34,7 @@ export class TaskService {
 
   async getTasks(user_email: string) {
     try {
-      const user = await this.prisma.user.findUnique({
-        where: {
-          email: user_email
-        }
-      });
-
-      if (!user) {
-        throw new NotFoundException("User does not exist");
-      }
-
-      delete user.password;
-
+      const user = await this.getUserByEmail(user_email);
       try {
         const tasks = await this.prisma.task.findMany({
           where: {
@@ -72,20 +61,11 @@ export class TaskService {
 
   async createTasks(user_email: string, dto: TaskDto): Promise<{}> {
     try {
-      const user = await this.prisma.user.findUnique({
-        where: {
-          email: user_email
-        }
-      });
-
-      if (!user) {
-        throw new NotFoundException("User not found");
-      }
+      const user = await this.getUserByEmail(user_email);
 
       dto.user_id = user.user_id;
       let due_date = moment(dto.due_date);
       dto.due_date = due_date.format("YYYY-MM-DD[T]HH:mm:ss.SSS[Z]");
-      delete user.password;
 
       try {
         const task = await this.prisma.task.create({
@@ -96,8 +76,6 @@ export class TaskService {
           console.error("Task not created");
           throw new InternalServerErrorException("Please try again");
         }
-
-        console.log(task);
 
         return {
           message: "Task created successfully",
@@ -118,17 +96,7 @@ export class TaskService {
 
   async getTask(user_email: string, task_id: number) {
     try {
-      const user = await this.prisma.user.findUnique({
-        where: {
-          email: user_email
-        }
-      });
-
-      if (!user) {
-        console.log("User could not be found");
-        throw new NotFoundException('User not found');
-      }
-
+      const user = await this.getUserByEmail(user_email);
       try {
         const task = await this.prisma.task.findUnique({
           where: {
@@ -160,17 +128,8 @@ export class TaskService {
 
   async dueDate(user_email: string, date: string) {
     try {
-      console.log(`Date: ${date}`);
 
-      const user = await this.prisma.user.findUnique({
-        where: {
-          email: user_email
-        }
-      });
-
-      if (!user) {
-        throw new InternalServerErrorException("Please try again later.")
-      }
+      const user = await this.getUserByEmail(user_email);
 
       try {
         const tasks = await this.prisma.task.findMany({
@@ -207,15 +166,7 @@ export class TaskService {
 
   async updateTask(user_email:string, dto: TaskDto, task_id: number) {
     try {
-      const user = await this.prisma.user.findUnique({
-        where: {
-          email: user_email
-        }
-      })
-
-      if (!user) {
-        throw new NotFoundException("User could not be found");
-      }
+      const user = await this.getUserByEmail(user_email);
 
       try {
         let task = await this.prisma.task.findUnique({
@@ -253,73 +204,72 @@ export class TaskService {
     }
   }
 
-  async deleteTask(user_email: string, dto: TaskDto, task_id) {
+  async deleteTask(user_email: string, task_id: number): Promise<{}> {
     try {
-      const user = await this.psql.getUser(user_email);
-      const query = `DELETE FROM tasks 
-                     WHERE task_id = $1 AND user_id = $2
-                     RETURNING *;`
-      const value = [
-        task_id, user.user_id
-      ]
+      const user = await this.getUserByEmail(user_email);
 
       try {
-        let result = await this.psql.query(query, value);
-        result = result.rows[0];
+
+        const task = await this.prisma.task.delete({
+          where: {
+            user_id: user.user_id,
+            task_id: task_id
+          }
+        });
 
         return {
-          message: "Tasks deleted successfully",
+          message: "Task deleted successfully",
           success: true,
-          statusCode: 200,
-          task: result
-
+          statusCode: 200
         }
-
+        
       } catch (error) {
         console.error(error);
         throw new InternalServerErrorException(error.message);
       }
     } catch (error) {
-      console.error(error.message);
-      throw new InternalServerErrorException("There seems to be a proble from our end. Please try again.")
+      console.error(error);
+      throw new InternalServerErrorException(error.message);
     }
   }
 
   async getPriorityList(user_email: string, priority: number) {
     try {
-      const user = await this.psql.getUser(user_email);
-      const query = `SELECT * FROM tasks
-                     WHERE priority = $1 AND user_id = $2`;
-      const value = [
-        priority, user.user_id
-      ];
+      const user = await this.getUserByEmail(user_email);
 
       try {
-        let result = await this.psql.query(query, value);
-        result = result.rows;
+        const tasks = await this.prisma.task.findMany({
+          where: {
+            user_id: user.user_id,
+            priority: priority
+          }
+        });
 
-        if (!result) {
+        if (!tasks) {
+          throw new InternalServerErrorException("There's an error on our end, please try again");
+        }
+
+        if (tasks.length === 0 ) {
           return {
-            message: "No Task with specified priority was found.",
+            message: `No tasks with priority of ${priority}`,
             success: true,
-            statusCode: 404,
-            tasks: []
+            statusCode: 200
           }
         }
 
         return {
-          message: 'Tasks retrieved successfully',
+          message: `Tasks with priority of ${priority}`,
           success: true,
           statusCode: 200,
-          tasks: result
+          tasks: tasks
         }
       } catch (error) {
         console.error(error);
-        throw new Error(error);
+        throw new InternalServerErrorException(error.message);
       }
     } catch (error) {
       console.error(error);
-      throw new Error(error);
+      throw new InternalServerErrorException(error.message);
     }
   }
 }
