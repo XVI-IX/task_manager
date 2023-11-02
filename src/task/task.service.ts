@@ -51,11 +51,11 @@ export class TaskService {
         
       } catch (error) {
         console.error(error);
-        throw new InternalServerErrorException("Please try again later");
+        throw new InternalServerErrorException("Tasks could not be retrieved. Please try again later");
       }
     } catch (error) {
       console.error(error);
-      throw new InternalServerErrorException(error.message);
+      throw new InternalServerErrorException("User data could not be retrieved. Please try again later");
     }
   }
 
@@ -90,7 +90,7 @@ export class TaskService {
       
     } catch (error) {
       console.error(error);
-      throw new InternalServerErrorException(error.message);
+      throw new InternalServerErrorException("User data could not be retrieved");
     }
   }
 
@@ -113,16 +113,16 @@ export class TaskService {
           message: "Task retrieved successfully",
           success: true,
           statusCode: 200,
-          task: task
+          task
         }
         
       } catch (error) {
         console.error(error);
-        throw new InternalServerErrorException("Please try again");
+        throw new InternalServerErrorException("Task data could not be retrieved");
       }
     } catch (error) {
       console.error(error.message);
-      throw new InternalServerErrorException("Please try again.");
+      throw new InternalServerErrorException("User data could not be retrieved. Please try again");
     }
   }
 
@@ -144,7 +144,7 @@ export class TaskService {
             message: `No tasks due on ${date}`,
             success: true,
             statusCode: 200,
-            tasks: tasks
+            tasks
           }
         }
 
@@ -152,15 +152,15 @@ export class TaskService {
           message: `Tasks due on ${date}`,
           success: true,
           statusCode: 200,
-          tasks: tasks
+          tasks
         }
       } catch (error) {
         console.error(error);
-        throw new InternalServerErrorException(error.message);
+        throw new InternalServerErrorException(`Tasks due on ${date} could not be retrieved.`);
       }
     } catch (error) {
       console.error(error);
-      throw new InternalServerErrorException(error.message);
+      throw new InternalServerErrorException("User data could not be retrieved");
     }
   }
 
@@ -176,8 +176,6 @@ export class TaskService {
           }
         });
 
-       
-
         task.title = dto.title;
         task.description = dto.description;
         task.due_date = new Date(dto.due_date);
@@ -192,15 +190,18 @@ export class TaskService {
         });
 
         return {
+          message: "Task updated successfully",
+          success: true,
+          statusCode: 200,
           update
         }
       } catch (error) {
         console.error(error);
-        throw new InternalServerErrorException(error.message);
+        throw new InternalServerErrorException("Task could not be updated successfully");
       }
     } catch (error) {
       console.error(error);
-      throw new InternalServerErrorException(error.message);
+      throw new InternalServerErrorException("User data could not be retrieved");
     }
   }
 
@@ -220,16 +221,17 @@ export class TaskService {
         return {
           message: "Task deleted successfully",
           success: true,
-          statusCode: 200
+          statusCode: 200,
+          task
         }
         
       } catch (error) {
         console.error(error);
-        throw new InternalServerErrorException(error.message);
+        throw new InternalServerErrorException("Task could not be deleted.");
       }
     } catch (error) {
       console.error(error);
-      throw new InternalServerErrorException(error.message);
+      throw new InternalServerErrorException("User data could not be retrieved.");
     }
   }
 
@@ -246,7 +248,7 @@ export class TaskService {
         });
 
         if (!tasks) {
-          throw new InternalServerErrorException("There's an error on our end, please try again");
+          throw new InternalServerErrorException("Unable to retrieve tasks data");
         }
 
         if (tasks.length === 0 ) {
@@ -271,5 +273,9 @@ export class TaskService {
       console.error(error);
       throw new InternalServerErrorException(error.message);
     }
+  }
+
+  async getCategories() {
+    
   }
 }
