@@ -22,14 +22,14 @@ export class TaskController {
   // In case there is a query parameter for due_date
   @HttpCode(200)
   @Get()
-  getTasks(@User() user, @Query('due_date') due_date?: string) {
+  getTasks(@User() user, @Query() query_params) {
 
-    if (due_date) {
-      due_date = moment(due_date).format("YYYY-MM-DD[T]HH:mm:ss.SSS[Z]")
-      return this.taskService.dueDate(user.email, due_date);
+    if (query_params.due_date) {
+      const due_date = moment(query_params.due_date).format("YYYY-MM-DD[T]HH:mm:ss.SSS[Z]");
+      return this.taskService.dueDate(user.email, due_date, query_params);
     }
 
-    return this.taskService.getTasks(user.email);
+    return this.taskService.getTasks(user.email, query_params);
   }
 
   //DONE: Create a new task

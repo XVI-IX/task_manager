@@ -1,5 +1,4 @@
-import { Injectable, InternalServerErrorException, NotFoundException, Request } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { PostgresService } from '../postgres/postgres.service';
 import { TaskDto } from './dto/task.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -32,7 +31,7 @@ export class TaskService {
     return user;
   }
 
-  async getTasks(user_email: string) {
+  async getTasks(user_email: string, query_params?) {
     try {
       const user = await this.getUserByEmail(user_email);
       try {
@@ -126,7 +125,7 @@ export class TaskService {
     }
   }
 
-  async dueDate(user_email: string, date: string) {
+  async dueDate(user_email: string, date: string, query_params) {
     try {
 
       const user = await this.getUserByEmail(user_email);
@@ -273,9 +272,5 @@ export class TaskService {
       console.error(error);
       throw new InternalServerErrorException(error.message);
     }
-  }
-
-  async getCategories() {
-    
   }
 }

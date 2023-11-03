@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module';
 import { PrismaService } from './prisma/prisma.service';
 import { PrismaController } from './prisma/prisma.controller';
 import { PrismaModule } from './prisma/prisma.module';
+import { CategoriesModule } from './categories/categories.module';
 
 @Module({
   imports: [
@@ -16,7 +17,7 @@ import { PrismaModule } from './prisma/prisma.module';
     PostgresModule, ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env'
-    }), AuthModule, PrismaModule],
+    }), AuthModule, PrismaModule, CategoriesModule],
   controllers: [AppController, PrismaController],
   providers: [AppService, PrismaService],
 })

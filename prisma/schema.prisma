@@ -10,7 +10,10 @@ datasource db {
 model Category {
   category_id   Int     @id @default(autoincrement())
   category_name String  @db.VarChar(50)
+  user_id       Int?
   tasks         Task[]
+
+  users         User?   @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
 
   @@map("categories")
 }
@@ -39,6 +42,7 @@ model User {
   created_at DateTime? @default(now()) @db.Timestamptz(6)
   updated_at DateTime? @updatedAt
   tasks      Task[]
+  categories Category[]
 
   @@map("users")
 }
