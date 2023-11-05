@@ -1,8 +1,7 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
-import { AuthGuard } from 'src/auth/auth.guard';
-import { User } from 'src/decorators/user.decorator';
-import { userInfo } from 'os';
+import { AuthGuard } from '../auth/auth.guard';
+import { User } from '../decorators/user.decorator';
 import { CategoryDto } from './dto/category.dto';
 
 @UseGuards(AuthGuard)
@@ -25,12 +24,13 @@ export class CategoriesController {
 
   @Post("/create")
   async createCategory(@User() user, @Body() dto: CategoryDto) {
-    return this.categoryService.createCategory(user.email);
+    
+    return this.categoryService.createCategory(user.email, dto);
   }
 
   @Patch(":id/update")
   async updateCategory(@User() user, @Param("id", ParseIntPipe) category_id: number, @Body() dto: CategoryDto) {
-    return this.categoryService.updateCategory(user.email, category_id);
+    return this.categoryService.updateCategory(user.email, category_id, dto);
   }
 
   @Delete(":id/delete")

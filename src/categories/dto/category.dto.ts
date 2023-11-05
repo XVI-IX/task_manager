@@ -5,6 +5,5 @@ export class CategoryDto {
   @IsString()
   categoryName: string;
 
-  @IsInt()
   user_id?: number;
 }

@@ -1,12 +1,13 @@
 import { Test } from "@nestjs/testing";
 import { AppModule } from "../src/app.module";
 import * as pactum from 'pactum';
-import { INestApplication, ValidationPipe } from "@nestjs/common";
+import { INestApplication, InternalServerErrorException, ValidationPipe } from "@nestjs/common";
 import { ConfigModule,ConfigService } from "@nestjs/config";
 import { RegisterDto } from "src/auth/dtos/register.dto";
 import { LoginDto } from "src/auth/dtos/login.dto";
 import { PostgresService } from "../src/postgres/postgres.service";
 import { TaskDto } from "src/task/dto/task.dto";
+import { CategoryDto } from "src/categories/dto/category.dto";
 
 describe("App e2e", () => {
 
@@ -15,6 +16,7 @@ describe("App e2e", () => {
   let psql: PostgresService;
   let authToken: string;
   let taskId: number;
+  let categoryId: number;
 
   beforeAll( async () => {
     process.env.NODE_ENV = 'test';
@@ -97,19 +99,81 @@ describe("App e2e", () => {
     });
   });
 
-  describe('📒 Task', () => {
+  describe('😺 Category', () => {
+    describe('Create New Category', () => {
+      it("should create new category", async () => {
 
-    describe('Get all tasks', () => {
-      it('should get all tasks by user', () => {
-        return pactum.spec().get(
-          '/tasks'
-        )
-        .withBearerToken(authToken)
-        .expectStatus(200)
-        .end();
-      });
+        const dto: CategoryDto = {
+          categoryName: "New category"
+        }
+        try {
+          const result = await pactum.spec().post(
+            '/categories/create'
+          )
+          .withBody(dto)
+          .withBearerToken(authToken)
+          .expectStatus(201)
+          .end();
+
+          categoryId = result.body.category.category_id;
+
+          return result;
+        } catch (error) {
+          console.error(error);
+          throw new InternalServerErrorException("Create New Category Test failed");
+        }
+      })
     });
 
+    describe("Get Categories", () => {
+      it("Should get all categories", () => {
+
+        return pactum.spec().get(
+          "/categories"
+        )
+        .withBearerToken(authToken)
+        .expectStatus(200);
+      })
+    });
+
+    describe("Get Category", () => {
+      it("Should get specific category", () => {
+        
+        return pactum.spec().get(
+          `/categories/${categoryId}`
+        )
+        .withBearerToken(authToken)
+        .expectStatus(200);
+      })
+    })
+
+    describe("Update Category", () => {
+      it("should update a category", () => {
+        const dto: CategoryDto = {
+          categoryName: "New Workout Category"
+        }
+  
+        return pactum.spec().patch(
+          `categories/${categoryId}/update`
+        )
+        .withBearerToken(authToken)
+        .withBody(dto)
+        .expectStatus(200);
+      });
+    })
+
+    describe("Delete Category", () => {
+      it("Should delete a category", () => {
+        return pactum.spec().delete(
+          `categories/${categoryId}/delete`
+        )
+        .withBearerToken(authToken)
+        .expectStatus(200);
+      })
+    })
+  });
+
+  describe('📒 Task', () => {
     describe('Create Tasks', () => {
       it('Should create task', async () => {
         const dto: TaskDto = {
@@ -117,7 +181,7 @@ describe("App e2e", () => {
           description: 'Task Description',
           due_date: "2023-10-23",
           priority: 0,
-          category_id: 1
+          category_id: categoryId
         }
 
         const result = await pactum.spec().post(
@@ -132,6 +196,17 @@ describe("App e2e", () => {
 
         return result;
       })
+    });
+
+    describe('Get all tasks', () => {
+      it('should get all tasks by user', () => {
+        return pactum.spec().get(
+          '/tasks'
+        )
+        .withBearerToken(authToken)
+        .expectStatus(200)
+        .end();
+      });
     });
 
     describe('Get a specific task by ID', () => {
@@ -224,6 +299,7 @@ describe("App e2e", () => {
       })
     });
   });
+
 
   afterAll(() => {
     app.close();
