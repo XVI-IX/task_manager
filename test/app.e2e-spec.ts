@@ -162,15 +162,6 @@ describe("App e2e", () => {
       });
     })
 
-    describe("Delete Category", () => {
-      it("Should delete a category", () => {
-        return pactum.spec().delete(
-          `/categories/${categoryId}/delete`
-        )
-        .withBearerToken(authToken)
-        .expectStatus(200);
-      })
-    })
   });
 
   describe('📒 Task', () => {
@@ -261,16 +252,6 @@ describe("App e2e", () => {
         )
         .withBearerToken(authToken)
         .expectStatus(200);
-    });
-  });
-
-    describe('Delete a specific task', () => {
-      it('Should delete specified task', () => {
-        return pactum.spec().delete(
-          `/tasks/${taskId}/delete`
-        )
-        .withBearerToken(authToken)
-        .expectStatus(200);
       });
     });
   });
@@ -298,6 +279,34 @@ describe("App e2e", () => {
         .expectStatus(200);
       })
     });
+  });
+
+  describe('❌ Deletes', () => {
+    describe('Delete a specific task', () => {
+      it('Should delete specified task', () => {
+        return pactum.spec().delete(
+          `/tasks/${taskId}/delete`
+        )
+        .withBearerToken(authToken)
+        .expectStatus(200);
+      });
+    });
+
+    describe("Delete Category", () => {
+      it("Should delete a category", () => {
+        return pactum.spec().delete(
+          `/categories/${categoryId}/delete`
+        )
+        .withBearerToken(authToken)
+        .expectStatus(200);
+      });
+    });
+
+    describe('Delete all Tasks', () => {
+      it('Should delete all tasks by user', () => {
+
+      })
+    })
   });
 
 
