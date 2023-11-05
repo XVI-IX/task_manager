@@ -138,7 +138,7 @@ describe("App e2e", () => {
 
     describe("Get Category", () => {
       it("Should get specific category", () => {
-        
+
         return pactum.spec().get(
           `/categories/${categoryId}`
         )
@@ -154,7 +154,7 @@ describe("App e2e", () => {
         }
   
         return pactum.spec().patch(
-          `categories/${categoryId}/update`
+          `/categories/${categoryId}/update`
         )
         .withBearerToken(authToken)
         .withBody(dto)
@@ -165,7 +165,7 @@ describe("App e2e", () => {
     describe("Delete Category", () => {
       it("Should delete a category", () => {
         return pactum.spec().delete(
-          `categories/${categoryId}/delete`
+          `/categories/${categoryId}/delete`
         )
         .withBearerToken(authToken)
         .expectStatus(200);
