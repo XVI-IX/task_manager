@@ -10,6 +10,8 @@ import { PrismaService } from './prisma/prisma.service';
 import { PrismaController } from './prisma/prisma.controller';
 import { PrismaModule } from './prisma/prisma.module';
 import { CategoriesModule } from './categories/categories.module';
+import { EmailModule } from './email/email.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
@@ -17,7 +19,10 @@ import { CategoriesModule } from './categories/categories.module';
     PostgresModule, ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env'
-    }), AuthModule, PrismaModule, CategoriesModule],
+    }), AuthModule, PrismaModule,
+    CategoriesModule, EmailModule,
+    EventEmitterModule.forRoot()
+  ],
   controllers: [AppController, PrismaController],
   providers: [AppService, PrismaService],
 })

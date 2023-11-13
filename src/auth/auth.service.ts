@@ -1,12 +1,16 @@
 import { ForbiddenException, Injectable, InternalServerErrorException, Req, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PostgresService } from '../postgres/postgres.service';
 
 import * as argon from 'argon2';
 import { LoginDto } from './dtos/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { RegisterDto } from './dtos/register.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { randomBytes } from 'node:crypto';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+// import { v4 as uui}
+
+// const { randomBytes } = await import('node:crypto');
 
 
 @Injectable()
@@ -14,9 +18,9 @@ export class AuthService {
 
   constructor(
     private config: ConfigService,
-    private psql: PostgresService,
     private jwt: JwtService,
-    private prisma: PrismaService
+    private prisma: PrismaService,
+    private readonly eventEmitter: EventEmitter2
   ) {
 
   }
@@ -43,21 +47,6 @@ export class AuthService {
   }
 
   async register(dto: RegisterDto) {
-
-    // const hash = await argon.hash(dto.password);
-    // const query = `
-    // INSERT INTO users (username, password, email)
-    // VALUES ($1, $2, $3)`;
-    // const values = [dto.username, hash, dto.email];
-
-    // try{
-    //   const user = await this.psql.query(query, values);
-
-    //   return user;
-    // } catch (error) {
-    //   console.error(error);
-    //   throw new Error(error.message);
-    // }
     try {
       const hash = await argon.hash(dto.password);
       const user = await this.prisma.user.create({
@@ -70,7 +59,9 @@ export class AuthService {
           user_id: true,
           username: true
         }
-      })
+      });
+
+      this.eventEmitter.emit('user.registered', user);
 
       return {
         message: "User created successfully",
@@ -113,15 +104,51 @@ export class AuthService {
     }
   }
 
-  async generateResetToken() {
+  async generateResetToken(): Promise<any> {
+    try {
+      const token = await randomBytes(256, (err, buff) => {
+        if (err) {
+          throw new InternalServerErrorException("Could not generate reset token")
+        }
 
+        const tokenString = buff.toString('hex');
+
+        return tokenString;
+      });
+
+      return token;
+    } catch (error) {
+      console.error(error);
+      throw new InternalServerErrorException(
+        "Token not generated"
+      );
+    }
   }
 
   async logout() {
     
   }
 
-  async forgotPassword() {
+  async forgotPassword(user_email: string) {
+    try {
+      const token = await this.generateResetToken();
+
+      const update = await this.prisma.user.update({
+        where: {
+          email: user_email
+        },
+        data: {
+          resetToken: token
+        }
+      });
+
+
+    } catch (error) {
+      console.error(error);
+      throw new InternalServerErrorException(
+        "Reset link could not be sent"
+      )
+    }
 
   }
 

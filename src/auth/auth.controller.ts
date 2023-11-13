@@ -4,6 +4,7 @@ import { LoginDto } from './dtos/login.dto';
 import { AuthService } from './auth.service';
 import { AuthGuard } from './auth.guard';
 import { Public } from '../decorators/public.decorator';
+import { User } from 'src/decorators/user.decorator';
 
 
 @Controller('auth')
@@ -26,6 +27,12 @@ export class AuthController {
   @Public()
   async login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
+  }
+
+  @Post("forgotPassword")
+  @Public()
+  async forgotPassword(@Body('email') email: string) {
+    return this.authService.forgotPassword(email);
   }
 
   // TODO: Log out of the current user account
