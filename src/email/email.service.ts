@@ -45,6 +45,20 @@ export class EmailService {
     })
   }
 
+  async updatePasswordEmail( email: Email ) {
+    const { data } = email;
+    const subject = "Your password was reset."
+
+    await this.mailerService.sendMail({
+      to: email.to,
+      subject,
+      template: "./updatePassword",
+      context: {
+        name: data.username
+      }
+    })
+  }
+
   @OnEvent('user.registered')
   handleUserRegisteredEvent(data: any) {
     this.welcomeEmail({
@@ -63,5 +77,15 @@ export class EmailService {
         name: data.username
       }
     });
+  }
+
+  @OnEvent('user.updatePassword')
+  handleUpdatePasswordEvent(data: any) {
+    this.updatePasswordEmail({
+      to: data.email,
+      data: {
+        name: data.username
+      }
+    })
   }
 }

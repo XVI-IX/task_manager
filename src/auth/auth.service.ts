@@ -8,6 +8,7 @@ import { RegisterDto } from './dtos/register.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { randomBytes } from 'node:crypto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { StatusCodes } from 'http-status-codes';
 // import { v4 as uui}
 
 // const { randomBytes } = await import('node:crypto');
@@ -46,6 +47,27 @@ export class AuthService {
     }
   }
 
+  async generateResetToken(): Promise<any> {
+    try {
+      const token = await randomBytes(256, (err, buff) => {
+        if (err) {
+          throw new InternalServerErrorException("Could not generate reset token")
+        }
+
+        const tokenString = buff.toString('hex');
+
+        return tokenString;
+      });
+
+      return token;
+    } catch (error) {
+      console.error(error);
+      throw new InternalServerErrorException(
+        "Token not generated"
+      );
+    }
+  }
+
   async register(dto: RegisterDto) {
     try {
       const hash = await argon.hash(dto.password);
@@ -65,7 +87,7 @@ export class AuthService {
 
       return {
         message: "User created successfully",
-        statusCode: 201,
+        statusCode: StatusCodes.CREATED,
         success: true,
         user
       }
@@ -104,26 +126,6 @@ export class AuthService {
     }
   }
 
-  async generateResetToken(): Promise<any> {
-    try {
-      const token = await randomBytes(256, (err, buff) => {
-        if (err) {
-          throw new InternalServerErrorException("Could not generate reset token")
-        }
-
-        const tokenString = buff.toString('hex');
-
-        return tokenString;
-      });
-
-      return token;
-    } catch (error) {
-      console.error(error);
-      throw new InternalServerErrorException(
-        "Token not generated"
-      );
-    }
-  }
 
   async logout() {
     
@@ -150,7 +152,7 @@ export class AuthService {
       return {
         message: "Reset Token Sent.",
         success: true,
-        statusCode: 200
+        statusCode: StatusCodes.OK
       }
 
     } catch (error) {
@@ -167,7 +169,46 @@ export class AuthService {
     token: string
     ) {
     try {
-      
+      let user = await this.prisma.user.findUnique({
+        where: {
+          email: user_email
+        },
+        select: {
+          email: true,
+          resetToken: true,
+          tokenExpiry: true
+        }
+      });
+
+      if (token !== user.resetToken) {
+        throw new UnauthorizedException("Uauthorised to reset token.")
+      }
+
+      if (Date.now() > user.tokenExpiry) {
+        throw new UnauthorizedException("Token expired.")
+      }
+
+      const hash = await argon.hash(password);
+
+      user = await this.prisma.user.update({
+        where: {
+          email: user_email
+        },
+        data: {
+          password: hash,
+          resetToken: '',
+        },
+      });
+
+      this.eventEmitter.emit("updatePassword", user);
+
+      return {
+        message: "Password reset successfully",
+        success: true,
+        statusCode: StatusCodes.OK,
+        user
+      }
+
     } catch (error) {
       console.error(error);
       throw new InternalServerErrorException("Password could not be reset")

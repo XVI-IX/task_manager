@@ -11,8 +11,8 @@ import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
   imports: [
     MailerModule.forRoot({
       transport: {
-        host: '<host>',
-        port: Number('<port>'),
+        host: 'smtp.gmail.com',
+        port: 465,
         secure: false,
         auth: {
           user: '<>',
