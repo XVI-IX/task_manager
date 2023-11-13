@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { CreateEmailDto } from './dto/create-email.dto';
 import { UpdateEmailDto } from './dto/update-email.dto';
 import { MailerService } from '@nestjs-modules/mailer';
@@ -43,6 +43,27 @@ export class EmailService {
         tokenUrl
       }
     })
+  }
+
+  async testEmail(email: Email) {
+    try {
+      const { data } = email;
+      const subject = `Test Email`;
+
+      console.log(process.env.EMAIL_PORT)
+
+      await this.mailerService.sendMail({
+        to: email.to,
+        subject,
+        template: './testmail',
+        context: {
+          name: data.username
+        }
+      })
+    } catch (error) {
+      console.error(error)
+      throw new InternalServerErrorException("Could not send mail")
+    }
   }
 
   async updatePasswordEmail( email: Email ) {

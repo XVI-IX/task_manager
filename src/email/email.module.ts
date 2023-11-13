@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { EmailService } from './email.service';
 import { EmailController } from './email.controller';
 import { MailerModule } from '@nestjs-modules/mailer';
-import { join } from 'path';
 import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
 
 @Module({
@@ -11,19 +10,19 @@ import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
   imports: [
     MailerModule.forRoot({
       transport: {
-        host: 'smtp.gmail.com',
-        port: 465,
+        host: process.env.EMAIL_HOST,
+        port: process.env.EMAIL_PORT,
         secure: false,
         auth: {
-          user: '<>',
-          pass: ''
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS
         },
       },
       defaults: {
-        from: 'David-Daniel at oladoja14@gmail.com'
+        from: 'oladoja14@gmail.com'
       },
       template: {
-        dir: join(__dirname, 'templates'),
+        dir: "src/templates/mail",
         adapter: new EjsAdapter()
       },
     }),
