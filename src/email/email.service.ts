@@ -4,10 +4,14 @@ import { UpdateEmailDto } from './dto/update-email.dto';
 import { MailerService } from '@nestjs-modules/mailer';
 import { Email } from './entities/email.entity';
 import { OnEvent } from '@nestjs/event-emitter';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class EmailService {
-  constructor(private readonly mailerService: MailerService) {
+  constructor(
+    private readonly mailerService: MailerService,
+    private configService: ConfigService
+    ) {
 
   }
 
@@ -25,6 +29,22 @@ export class EmailService {
     })
   }
 
+  async resetPasswordEmail(email: Email) {
+    const { data } = email;
+    const subject = "Password Reset Token";
+    const tokenUrl = `${this.configService.get("URL")}?token=${data.resetToken}`
+
+    await this.mailerService.sendMail({
+      to: email.to,
+      subject,
+      template: './resetPassword',
+      context: {
+        name: data.username,
+        tokenUrl
+      }
+    })
+  }
+
   @OnEvent('user.registered')
   handleUserRegisteredEvent(data: any) {
     this.welcomeEmail({
@@ -33,5 +53,15 @@ export class EmailService {
         name: data.username
       }
     })
+  }
+
+  @OnEvent('user.resetPassword')
+  handleResetPasswordEvent(data: any) {
+    this.resetPasswordEmail({
+      to: data.email,
+      data: {
+        name: data.username
+      }
+    });
   }
 }

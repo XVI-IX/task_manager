@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, UseGuards, HttpCode, Redirect, Req } from '@nestjs/common';
+import { Controller, Post, Get, Body, UseGuards, HttpCode, Redirect, Req, Query } from '@nestjs/common';
 import { RegisterDto } from './dtos/register.dto';
 import { LoginDto } from './dtos/login.dto';
 import { AuthService } from './auth.service';
@@ -33,6 +33,13 @@ export class AuthController {
   @Public()
   async forgotPassword(@Body('email') email: string) {
     return this.authService.forgotPassword(email);
+  }
+
+  @Get("resetPassword")
+  async resetPassword(@Body() body, @Query('token') token: string){
+    return this.authService.resetPassword(
+      body.password, body.email,token
+    );
   }
 
   // TODO: Log out of the current user account

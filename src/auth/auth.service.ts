@@ -132,16 +132,26 @@ export class AuthService {
   async forgotPassword(user_email: string) {
     try {
       const token = await this.generateResetToken();
+      const expiryTime = Date.now() + (60 * 60 * 1000);
 
       const update = await this.prisma.user.update({
         where: {
           email: user_email
         },
         data: {
-          resetToken: token
+          resetToken: token,
+          tokenExpiry: expiryTime
         }
       });
 
+
+      this.eventEmitter.emit('user.resetPassword', update);
+
+      return {
+        message: "Reset Token Sent.",
+        success: true,
+        statusCode: 200
+      }
 
     } catch (error) {
       console.error(error);
@@ -152,7 +162,16 @@ export class AuthService {
 
   }
 
-  async resetPassword() {
+  async resetPassword(
+    password: string, user_email: string,
+    token: string
+    ) {
+    try {
+      
+    } catch (error) {
+      console.error(error);
+      throw new InternalServerErrorException("Password could not be reset")
+    }
 
   }
 }
