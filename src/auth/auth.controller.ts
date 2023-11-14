@@ -30,6 +30,7 @@ export class AuthController {
   }
 
   @Post("forgotPassword")
+  @HttpCode(200)
   @Public()
   async forgotPassword(@Body('email') email: string) {
     return this.authService.forgotPassword(email);

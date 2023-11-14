@@ -8,6 +8,7 @@ import { LoginDto } from "src/auth/dtos/login.dto";
 import { PostgresService } from "../src/postgres/postgres.service";
 import { TaskDto } from "src/task/dto/task.dto";
 import { CategoryDto } from "src/categories/dto/category.dto";
+import { isMainThread } from "node:worker_threads";
 
 describe("App e2e", () => {
 
@@ -97,6 +98,20 @@ describe("App e2e", () => {
          .expectStatus(200);
       });
     });
+
+    describe('Forgot Password', () => {
+      it("Should send token", () => {
+        const payload: any = {
+          email: "admin@testing.com"
+        }
+
+        return pactum.spec().post(
+          `/auth/forgotPassword`
+        )
+        .withBody(payload)
+        .expectStatus(200);
+      })
+    })
   });
 
   describe('😺 Category', () => {

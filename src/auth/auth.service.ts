@@ -151,10 +151,7 @@ export class AuthService {
     try {
       const user = await this.getUserByEmail(user_email);
 
-
-
       const token = await this.generateResetToken(user);
-      // const expiryTime = Date.now() + (60 * 60 * 1000);
 
       const update = await this.prisma.user.update({
         where: {
@@ -172,7 +169,6 @@ export class AuthService {
           resetToken: update.resetToken
         }
       }
-
 
       this.eventEmitter.emit('user.resetPassword', data);
 
