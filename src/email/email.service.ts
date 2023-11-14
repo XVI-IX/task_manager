@@ -33,7 +33,7 @@ export class EmailService {
   async resetPasswordEmail(email: Email) {
     const { data } = email;
     const subject = "Password Reset Token";
-    const tokenUrl = `${this.configService.get("URL")}?token=${data.resetToken}`;
+    const tokenUrl = `${this.configService.get("URL")}/auth/resetPassword?token=${data.resetToken}`;
 
     console.log(tokenUrl);
 
@@ -76,7 +76,7 @@ export class EmailService {
     await this.mailerService.sendMail({
       to: email.to,
       subject,
-      template: "./updatePassword",
+      template: "./updateMail",
       context: {
         name: data.username
       }

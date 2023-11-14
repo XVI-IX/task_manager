@@ -204,17 +204,21 @@ export class AuthService {
           username: true,
           email: true,
           resetToken: true,
-          tokenExpiry: true
         }
       });
 
-      if (token !== user.resetToken) {
+      const match = await this.jwt.verifyAsync(token, {
+        secret: this.config.get("RESET_SECRET")
+      });
+
+      if (!match) {
         throw new UnauthorizedException("Uauthorised to reset token.")
       }
 
-      if (Date.now() > user.tokenExpiry) {
-        throw new UnauthorizedException("Token expired.")
+      if (!user.resetToken) {
+        throw new UnauthorizedException("Generate a reset token");
       }
+
 
       const hash = await argon.hash(password);
 
@@ -224,7 +228,7 @@ export class AuthService {
         },
         data: {
           password: hash,
-          resetToken: '',
+          resetToken: null,
         },
       });
 
@@ -234,13 +238,14 @@ export class AuthService {
           username: user.username
         }
       }
-      this.eventEmitter.emit("updatePassword", data);
+
+      this.eventEmitter.emit("user.updatePassword", data);
 
       return {
         message: "Password reset successfully",
         success: true,
         statusCode: StatusCodes.OK,
-        user
+        update
       }
 
     } catch (error) {
