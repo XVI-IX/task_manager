@@ -48,19 +48,26 @@ export class AuthService {
     }
   }
 
-  async generateResetToken(): Promise<any> {
+  async generateResetToken(payload: any): Promise<any> {
     try {
-      const token = await randomBytes(256, (err, buff) => {
-        if (err) {
-          throw new InternalServerErrorException("Could not generate reset token")
-        }
-
-        const tokenString = buff.toString('hex');
-
-        return tokenString;
+      const token = await this.jwt.signAsync(payload, {
+        secret: this.config.get("RESET_SECRET"),
+        expiresIn: Date.now() + 60 * 60 * 1000
       });
 
-      return token;
+      return token
+
+      // const token = await randomBytes(256, (err, buff) => {
+      //   if (err) {
+      //     throw new InternalServerErrorException("Could not generate reset token")
+      //   }
+
+      //   const tokenString = buff.toString('hex');
+
+      //   return tokenString;
+      // });
+
+      // return token;
     } catch (error) {
       console.error(error);
       throw new InternalServerErrorException(
@@ -142,8 +149,12 @@ export class AuthService {
 
   async forgotPassword(user_email: string) {
     try {
-      const token = await this.generateResetToken();
-      const expiryTime = Date.now() + (60 * 60 * 1000);
+      const user = await this.getUserByEmail(user_email);
+
+
+
+      const token = await this.generateResetToken(user);
+      // const expiryTime = Date.now() + (60 * 60 * 1000);
 
       const update = await this.prisma.user.update({
         where: {
@@ -151,12 +162,19 @@ export class AuthService {
         },
         data: {
           resetToken: token,
-          tokenExpiry: expiryTime
         }
       });
 
+      const data: Email = {
+        to: update.email,
+        data: {
+          username: update.username,
+          resetToken: update.resetToken
+        }
+      }
 
-      this.eventEmitter.emit('user.resetPassword', update);
+
+      this.eventEmitter.emit('user.resetPassword', data);
 
       return {
         message: "Reset Token Sent.",
@@ -183,6 +201,7 @@ export class AuthService {
           email: user_email
         },
         select: {
+          username: true,
           email: true,
           resetToken: true,
           tokenExpiry: true
@@ -199,7 +218,7 @@ export class AuthService {
 
       const hash = await argon.hash(password);
 
-      user = await this.prisma.user.update({
+      const update = await this.prisma.user.update({
         where: {
           email: user_email
         },
@@ -209,7 +228,13 @@ export class AuthService {
         },
       });
 
-      this.eventEmitter.emit("updatePassword", user);
+      const data: Email = {
+        to: user.email,
+        data: {
+          username: user.username
+        }
+      }
+      this.eventEmitter.emit("updatePassword", data);
 
       return {
         message: "Password reset successfully",
