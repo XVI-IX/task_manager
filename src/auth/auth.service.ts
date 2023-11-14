@@ -9,6 +9,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { randomBytes } from 'node:crypto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { StatusCodes } from 'http-status-codes';
+import { Email } from 'src/email/entities/email.entity';
 // import { v4 as uui}
 
 // const { randomBytes } = await import('node:crypto');
@@ -79,11 +80,19 @@ export class AuthService {
         },
         select: {
           user_id: true,
-          username: true
+          username: true,
+          email: true
         }
       });
 
-      this.eventEmitter.emit('user.registered', user);
+      const email: Email = {
+        to: user.email,
+        data: {
+          username: user.username
+        }
+      };
+
+      this.eventEmitter.emit('user.registered', email);
 
       return {
         message: "User created successfully",

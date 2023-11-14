@@ -17,6 +17,7 @@ export class EmailService {
 
   async welcomeEmail(email: Email) {
     const { data } = email;
+    console.log(data);
     const subject = `Welcome ${data.username}`;
 
     await this.mailerService.sendMail({
@@ -82,31 +83,16 @@ export class EmailService {
 
   @OnEvent('user.registered')
   handleUserRegisteredEvent(data: any) {
-    this.welcomeEmail({
-      to: data.email,
-      data: {
-        name: data.username
-      }
-    })
+    this.welcomeEmail(data);
   }
 
   @OnEvent('user.resetPassword')
   handleResetPasswordEvent(data: any) {
-    this.resetPasswordEmail({
-      to: data.email,
-      data: {
-        name: data.username
-      }
-    });
+    this.resetPasswordEmail(data);
   }
 
   @OnEvent('user.updatePassword')
   handleUpdatePasswordEvent(data: any) {
-    this.updatePasswordEmail({
-      to: data.email,
-      data: {
-        name: data.username
-      }
-    })
+    this.updatePasswordEmail(data)
   }
 }
