@@ -12,6 +12,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { CategoriesModule } from './categories/categories.module';
 import { EmailModule } from './email/email.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { SwaggerModule } from '@nestjs/swagger';
 
 @Module({
   imports: [
@@ -21,7 +22,8 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
       envFilePath: '.env'
     }), AuthModule, PrismaModule,
     CategoriesModule, EmailModule,
-    EventEmitterModule.forRoot()
+    EventEmitterModule.forRoot(),
+    SwaggerModule
   ],
   controllers: [AppController, PrismaController],
   providers: [AppService, PrismaService],

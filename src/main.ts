@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import { setupSwagger } from './swagger/swagger';
 
 
 async function bootstrap() {
@@ -9,6 +10,9 @@ async function bootstrap() {
     new ValidationPipe({
       whitelist: true,
   }));
+
+  setupSwagger(app);
+
   await app.listen(3000);
 }
 bootstrap();
