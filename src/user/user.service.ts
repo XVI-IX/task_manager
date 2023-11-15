@@ -89,18 +89,6 @@ export class UserService {
     
   }
 
-  async saveResetToken() {
-
-  }
-
-  async findByResetToken() {
-
-  }
-
-  async updatePassword() {
-    
-  }
-
   async testUser() {
     
     const user = await this.prisma.user.findUnique({

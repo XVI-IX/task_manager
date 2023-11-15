@@ -6,7 +6,6 @@ import { LoginDto } from './dtos/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { RegisterDto } from './dtos/register.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { randomBytes } from 'node:crypto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { StatusCodes } from 'http-status-codes';
 import { Email } from 'src/email/entities/email.entity';

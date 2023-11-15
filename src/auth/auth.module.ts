@@ -9,6 +9,8 @@ import { PrismaModule } from '../prisma/prisma.module';
 @Module({
   controllers: [AuthController],
   providers: [AuthService],
-  imports: [PostgresModule, JwtModule, PrismaModule]
+  imports: [
+    PostgresModule, JwtModule,
+    PrismaModule]
 })
 export class AuthModule {}
