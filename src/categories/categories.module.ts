@@ -8,12 +8,13 @@ import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   controllers: [CategoriesController],
-  providers: [CategoriesService, {
-    provide: APP_GUARD,
-    useClass: AuthGuard
-  }],
-  imports: [
-    PrismaModule, JwtModule
-  ]
+  providers: [
+    CategoriesService,
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
+  ],
+  imports: [PrismaModule, JwtModule],
 })
 export class CategoriesModule {}

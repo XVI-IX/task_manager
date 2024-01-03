@@ -16,14 +16,19 @@ import { SwaggerModule } from '@nestjs/swagger';
 
 @Module({
   imports: [
-    UserModule, TaskModule,
-    PostgresModule, ConfigModule.forRoot({
+    UserModule,
+    TaskModule,
+    PostgresModule,
+    ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env'
-    }), AuthModule, PrismaModule,
-    CategoriesModule, EmailModule,
+      envFilePath: '.env',
+    }),
+    AuthModule,
+    PrismaModule,
+    CategoriesModule,
+    EmailModule,
     EventEmitterModule.forRoot(),
-    SwaggerModule
+    SwaggerModule,
   ],
   controllers: [AppController, PrismaController],
   providers: [AppService, PrismaService],
