@@ -1,64 +1,102 @@
-import { Injectable, InternalServerErrorException, NotFoundException, Req, Request } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { PostgresService } from '../postgres/postgres.service';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class UserService {
+  constructor(private prisma: PrismaService) {}
 
-  constructor(
-    private config?: ConfigService,
-    private psql?: PostgresService
-  ) {}
+  private async getUserByEmail(user_email: string) {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: {
+          email: user_email,
+        },
+        select: {
+          user_id: true,
+          username: true,
+          email: true,
+        },
+      });
 
-  async profile(user_email: string) {
-     try {
-
-      const user = await this.psql.getUser(user_email);
-      delete user.password;
-
-      try {
-        const query = `
-        SELECT * FROM tasks
-        WHERE user_id = $1;
-        `
-      const values = [user.user_id];
-      const result = await this.psql.query(query, values);
-
-      if (!result) {
-        throw new NotFoundException("Tasks for user not found")
+      if (!user) {
+        throw new NotFoundException('User not found.');
       }
 
-      if (result.rows.length == 0) {
-        return {
-          message: "No tasks for user.",
-          success: true,
-          statusCode: 404,
-          user: user,
-          tasks: [],
-          number_of_tasks: result.rows.length
-        }
-      }
-
-      return {
-        message: "User Profile",
-        success: true,
-        statusCode: 200,
-        user: user,
-        tasks: result.rows,
-        number_of_tasks: result.rows.length
-      }
-
-      } catch (error) {
-        console.error(error);
-        throw new InternalServerErrorException(error.message);
-      }
-     } catch (error) {
-      console.error(error.message);
-      throw new InternalServerErrorException(error);
-     }
+      return user;
+    } catch (error) {
+      console.error(error);
+      throw new InternalServerErrorException(error.message);
+    }
   }
 
-  async dashboard(user_email: string) {
-    
+  async getProfile(user_email: string) {
+    try {
+      const user = await this.getUserByEmail(user_email);
+
+      return user;
+    } catch (error) {
+      console.error(error);
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  async getDashboard(user_email: string) {
+    try {
+      const user = await this.getUserByEmail(user_email);
+
+      try {
+        const tasks = await this.prisma.task.findMany({
+          where: {
+            user_id: user.user_id,
+          },
+        });
+
+        if (!tasks) {
+          throw new InternalServerErrorException(
+            'unable to retrieve tasks data',
+          );
+        }
+
+        if (tasks.length === 0) {
+          return {
+            message: `No tasks for user ${user.username}`,
+            user: user,
+            tasks: tasks,
+            success: true,
+            statusCode: 200,
+          };
+        }
+
+        return {
+          message: 'Dashboard data retreived successfully',
+          user: user,
+          tasks: tasks,
+          success: true,
+          statusCodes: 200,
+        };
+      } catch (error) {
+        console.error(error);
+        throw new InternalServerErrorException(
+          'Unable to retrieve dashboard data',
+        );
+      }
+    } catch (error) {
+      console.error(error);
+      throw new InternalServerErrorException('Unable to retrieve user data');
+    }
+  }
+
+  async testUser() {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email: 'testUser@admin.com',
+      },
+    });
+
+    return user.username;
   }
 }

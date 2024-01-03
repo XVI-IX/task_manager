@@ -1,82 +1,239 @@
-import { ForbiddenException, Injectable, Req, UnauthorizedException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  InternalServerErrorException,
+  Req,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PostgresService } from '../postgres/postgres.service';
 
 import * as argon from 'argon2';
 import { LoginDto } from './dtos/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { RegisterDto } from './dtos/register.dto';
-import { Request } from 'express';
+import { PrismaService } from '../prisma/prisma.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { StatusCodes } from 'http-status-codes';
+import { Email } from 'src/email/entities/email.entity';
+// import { v4 as uui}
 
+// const { randomBytes } = await import('node:crypto');
 
 @Injectable()
 export class AuthService {
-
   constructor(
     private config: ConfigService,
-    private psql: PostgresService,
-    private jwt: JwtService
-  ) {
+    private jwt: JwtService,
+    private prisma: PrismaService,
+    private readonly eventEmitter: EventEmitter2,
+  ) {}
 
-  }
-
-  async register(dto: RegisterDto) {
-
-    const hash = await argon.hash(dto.password);
-    const query = `
-    INSERT INTO users (username, password, email)
-    VALUES ($1, $2, $3)`;
-    const values = [dto.username, hash, dto.email];
-
-    try{
-      const user = await this.psql.query(query, values);
+  private async getUserByEmail(email: string) {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: {
+          email: email,
+        },
+        select: {
+          user_id: true,
+          username: true,
+          email: true,
+          password: true,
+        },
+      });
 
       return user;
     } catch (error) {
       console.error(error);
-      throw new Error(error.message);
+      throw new InternalServerErrorException('Could not get user.');
     }
   }
 
-  async login(dto: LoginDto): Promise<{access_token: string}> {
-    const query = `SELECT * FROM users WHERE email = $1`;
-    const values = [dto.email];
-
+  async generateResetToken(payload: any): Promise<any> {
     try {
-      const user = await this.psql.query(query, values);
-      const data = user.rows[0];
+      const token = await this.jwt.signAsync(payload, {
+        secret: this.config.get('RESET_SECRET'),
+        expiresIn: Date.now() + 60 * 60 * 1000,
+      });
 
-      if (!data) {
-        throw new ForbiddenException("Invalid Credentials.");
-      }
-      
-      const match = await argon.verify(data.password, dto.password)
-      
+      return token;
+
+      // const token = await randomBytes(256, (err, buff) => {
+      //   if (err) {
+      //     throw new InternalServerErrorException("Could not generate reset token")
+      //   }
+
+      //   const tokenString = buff.toString('hex');
+
+      //   return tokenString;
+      // });
+
+      // return token;
+    } catch (error) {
+      console.error(error);
+      throw new InternalServerErrorException('Token not generated');
+    }
+  }
+
+  async register(dto: RegisterDto) {
+    try {
+      const hash = await argon.hash(dto.password);
+      const user = await this.prisma.user.create({
+        data: {
+          username: dto.username,
+          email: dto.email,
+          password: hash,
+        },
+        select: {
+          user_id: true,
+          username: true,
+          email: true,
+        },
+      });
+
+      const email: Email = {
+        to: user.email,
+        data: {
+          username: user.username,
+        },
+      };
+
+      this.eventEmitter.emit('user.registered', email);
+
+      return {
+        message: 'User created successfully',
+        statusCode: StatusCodes.CREATED,
+        success: true,
+        user,
+      };
+    } catch (error) {
+      console.error(error);
+      throw new InternalServerErrorException('Could not register user');
+    }
+  }
+
+  async login(dto: LoginDto): Promise<{ access_token: string }> {
+    try {
+      const user = await this.getUserByEmail(dto.email);
+
+      const match = await argon.verify(user.password, dto.password);
+
       if (!match) {
-        throw new ForbiddenException("Invalid Password");
+        throw new ForbiddenException('Invalid password');
       }
 
       const payload = {
-        sub: data.user_id,
-        email: data.email
-      }
+        sub: user.user_id,
+        email: user.email,
+      };
 
       const token = await this.jwt.signAsync(payload, {
         secret: this.config.get('SECRET'),
-        expiresIn: this.config.get('EXPIRES_IN')
+        expiresIn: this.config.get('EXPIRES_IN'),
       });
 
       return {
-        access_token: token
+        access_token: token,
       };
-
     } catch (error) {
-      throw new UnauthorizedException(error.message);
+      console.error(error);
+      throw new InternalServerErrorException('Could not login');
     }
-
   }
 
-  async logout() {
-    
+  async logout() {}
+
+  async forgotPassword(user_email: string) {
+    try {
+      const user = await this.getUserByEmail(user_email);
+
+      const token = await this.generateResetToken(user);
+
+      const update = await this.prisma.user.update({
+        where: {
+          email: user_email,
+        },
+        data: {
+          resetToken: token,
+        },
+      });
+
+      const data: Email = {
+        to: update.email,
+        data: {
+          username: update.username,
+          resetToken: update.resetToken,
+        },
+      };
+
+      this.eventEmitter.emit('user.resetPassword', data);
+
+      return {
+        message: 'Reset Token Sent.',
+        success: true,
+        statusCode: StatusCodes.OK,
+      };
+    } catch (error) {
+      console.error(error);
+      throw new InternalServerErrorException('Reset link could not be sent');
+    }
+  }
+
+  async resetPassword(password: string, user_email: string, token: string) {
+    try {
+      let user = await this.prisma.user.findUnique({
+        where: {
+          email: user_email,
+        },
+        select: {
+          username: true,
+          email: true,
+          resetToken: true,
+        },
+      });
+
+      const match = await this.jwt.verifyAsync(token, {
+        secret: this.config.get('RESET_SECRET'),
+      });
+
+      if (!match) {
+        throw new UnauthorizedException('Uauthorised to reset token.');
+      }
+
+      if (!user.resetToken) {
+        throw new UnauthorizedException('Generate a reset token');
+      }
+
+      const hash = await argon.hash(password);
+
+      const update = await this.prisma.user.update({
+        where: {
+          email: user_email,
+        },
+        data: {
+          password: hash,
+          resetToken: null,
+        },
+      });
+
+      const data: Email = {
+        to: user.email,
+        data: {
+          username: user.username,
+        },
+      };
+
+      this.eventEmitter.emit('user.updatePassword', data);
+
+      return {
+        message: 'Password reset successfully',
+        success: true,
+        statusCode: StatusCodes.OK,
+        update,
+      };
+    } catch (error) {
+      console.error(error);
+      throw new InternalServerErrorException('Password could not be reset');
+    }
   }
 }

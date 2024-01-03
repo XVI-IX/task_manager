@@ -1,0 +1,24 @@
+<html>
+  <head>
+    <title>Password Reset Link</title>
+  </head>
+
+  <body>
+    <h3>Hi, <%= name %></h3>
+
+    <p>
+      Click the button below to reset your password.
+
+      <form action="<%= tokenUrl %>" method="post">
+        <input type="submit" value="reset token">
+      </form>
+    </p>
+
+    <p>
+      
+      if the button above does not function click the link below.
+
+      <a href="<%= tokenUrl %>"> <%= tokenUrl %></a>
+    </p>
+  </body>
+</html>
