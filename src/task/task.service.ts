@@ -107,85 +107,6 @@ export class TaskService {
     }
   }
 
-  async getTask(user_email: string, task_id: number) {
-    try {
-      const user = await this.getUserByEmail(user_email);
-      try {
-        const task = await this.prisma.task.findUnique({
-          where: {
-            user_id: user.user_id,
-            task_id: task_id,
-          },
-        });
-
-        if (!task) {
-          throw new NotFoundException('Tasks not Found');
-        }
-
-        return {
-          message: 'Task retrieved successfully',
-          success: true,
-          statusCode: 200,
-          task,
-        };
-      } catch (error) {
-        console.error(error);
-        throw new InternalServerErrorException(
-          'Task data could not be retrieved',
-        );
-      }
-    } catch (error) {
-      console.error(error.message);
-      throw new InternalServerErrorException(
-        'User data could not be retrieved. Please try again',
-      );
-    }
-  }
-
-  async dueDate(user_email: string, date: string, query_params) {
-    try {
-      const { page } = query_params;
-      const user = await this.getUserByEmail(user_email);
-
-      try {
-        const tasks = await this.prisma.task.findMany({
-          where: {
-            user_id: user.user_id,
-            due_date: date,
-          },
-          skip: (page - 1) * this.config.get('PAGESIZE'),
-          limit: this.config.get('PAGESIZE'),
-        });
-
-        if (tasks.length === 0) {
-          return {
-            message: `No tasks due on ${date}`,
-            success: true,
-            statusCode: 200,
-            tasks,
-          };
-        }
-
-        return {
-          message: `Tasks due on ${date}`,
-          success: true,
-          statusCode: 200,
-          tasks,
-        };
-      } catch (error) {
-        console.error(error);
-        throw new InternalServerErrorException(
-          `Tasks due on ${date} could not be retrieved.`,
-        );
-      }
-    } catch (error) {
-      console.error(error);
-      throw new InternalServerErrorException(
-        'User data could not be retrieved',
-      );
-    }
-  }
-
   async updateTask(user_email: string, dto: TaskDto, task_id: number) {
     try {
       const user = await this.getUserByEmail(user_email);
@@ -257,6 +178,92 @@ export class TaskService {
       console.error(error);
       throw new InternalServerErrorException(
         'User data could not be retrieved.',
+      );
+    }
+  }
+
+  async getTask(user_email: string, task_id: number) {
+    try {
+      const user = await this.getUserByEmail(user_email);
+      try {
+        const task = await this.prisma.task.findUnique({
+          where: {
+            user_id: user.user_id,
+            task_id: task_id,
+          },
+        });
+
+        if (!task) {
+          throw new NotFoundException('Tasks not Found');
+        }
+
+        return {
+          message: 'Task retrieved successfully',
+          success: true,
+          statusCode: 200,
+          task,
+        };
+      } catch (error) {
+        console.error(error);
+        throw new InternalServerErrorException(
+          'Task data could not be retrieved',
+        );
+      }
+    } catch (error) {
+      console.error(error.message);
+      throw new InternalServerErrorException(
+        'User data could not be retrieved. Please try again',
+      );
+    }
+  }
+
+  /**
+   * Retrieves all tasks with specified due date created by user
+   * in session
+   * @param {string} user_email User's email
+   * @param {Date} date date for tasks to be searched
+   * @param {object} query_params object of query parameters
+   */
+  async dueDate(user_email: string, date: string, query_params) {
+    try {
+      const { page } = query_params;
+      const user = await this.getUserByEmail(user_email);
+
+      try {
+        const tasks = await this.prisma.task.findMany({
+          where: {
+            user_id: user.user_id,
+            due_date: date,
+          },
+          skip: (page - 1) * this.config.get('PAGESIZE'),
+          limit: this.config.get('PAGESIZE'),
+        });
+
+        if (tasks.length === 0) {
+          return {
+            message: `No tasks due on ${date}`,
+            success: true,
+            statusCode: 200,
+            tasks,
+          };
+        }
+
+        return {
+          message: `Tasks due on ${date}`,
+          success: true,
+          statusCode: 200,
+          tasks,
+        };
+      } catch (error) {
+        console.error(error);
+        throw new InternalServerErrorException(
+          `Tasks due on ${date} could not be retrieved.`,
+        );
+      }
+    } catch (error) {
+      console.error(error);
+      throw new InternalServerErrorException(
+        'User data could not be retrieved',
       );
     }
   }
