@@ -10,13 +10,13 @@ import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
   controllers: [TaskController],
-  providers: [TaskService, {
-    provide: APP_GUARD,
-    useClass: AuthGuard
-  }],
-  imports: [
-    ConfigModule, PostgresModule, JwtModule,
-    PrismaModule
-  ]
+  providers: [
+    TaskService,
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
+  ],
+  imports: [ConfigModule, PostgresModule, JwtModule, PrismaModule],
 })
 export class TaskModule {}

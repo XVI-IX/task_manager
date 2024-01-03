@@ -15,13 +15,18 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
-    UserModule, TaskModule,
-    PostgresModule, ConfigModule.forRoot({
+    UserModule,
+    TaskModule,
+    PostgresModule,
+    ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env'
-    }), AuthModule, PrismaModule,
-    CategoriesModule, EmailModule,
-    EventEmitterModule.forRoot()
+      envFilePath: '.env',
+    }),
+    AuthModule,
+    PrismaModule,
+    CategoriesModule,
+    EmailModule,
+    EventEmitterModule.forRoot(),
   ],
   controllers: [AppController, PrismaController],
   providers: [AppService, PrismaService],

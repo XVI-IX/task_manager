@@ -7,26 +7,22 @@ export class PostgresService {
   private readonly logger = new Logger(PostgresService.name);
   private readonly pool: Pool;
 
-  constructor(
-    private config: ConfigService
-  ) {
+  constructor(private config: ConfigService) {
     this.pool = new Pool({
-      user: this.config.get("DB_USERNAME"),
-      host: this.config.get("DB_HOST"),
+      user: this.config.get('DB_USERNAME'),
+      host: this.config.get('DB_HOST'),
       database: this.config.get('DB_NAME'),
       password: this.config.get('DB_PASSWORD'),
-      port: this.config.get("DB_PORT")
+      port: this.config.get('DB_PORT'),
     });
   }
 
-  async query (text: string, values: any[] = []): Promise<any> {
+  async query(text: string, values: any[] = []): Promise<any> {
     try {
       const result = await this.pool.query(text, values);
       return result;
     } catch (error) {
-      this.logger.error(
-        `Error executing query: ${error.message}`
-      );
+      this.logger.error(`Error executing query: ${error.message}`);
       throw error;
     }
   }
@@ -40,36 +36,32 @@ export class PostgresService {
       result = result.rows[0];
 
       if (!result) {
-        throw new NotFoundException("User not found");
+        throw new NotFoundException('User not found');
       }
 
       return result;
     } catch (error) {
-      this.logger.error(
-        `Error executing query: ${error.message}`
-      );
+      this.logger.error(`Error executing query: ${error.message}`);
 
       throw error;
     }
   }
 
   async clean() {
+    const text =
+      'DELETE FROM tasks; DELETE FROM categories; DELETE FROM users;';
 
-    const text = 'DELETE FROM tasks; DELETE FROM categories; DELETE FROM users;'
-
-    try{
+    try {
       await this.query(text);
 
-      console.log("Database cleared");
+      console.log('Database cleared');
 
       return {
         message: 'Database Cleaned',
-        success: true
-      }
+        success: true,
+      };
     } catch (error) {
-      this.logger.error(
-        `Error executing query: ${error.message}`
-      )
+      this.logger.error(`Error executing query: ${error.message}`);
       throw error;
     }
   }

@@ -7,13 +7,15 @@ import { AuthGuard } from '../auth/auth.guard';
 import { JwtModule } from '@nestjs/jwt';
 import { PrismaModule } from '../prisma/prisma.module';
 
-
 @Module({
   controllers: [UserController],
-  providers: [UserService, {
-    provide: APP_GUARD,
-    useClass: AuthGuard
-  }],
-  imports: [PostgresModule, JwtModule, PrismaModule]
+  providers: [
+    UserService,
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
+  ],
+  imports: [PostgresModule, JwtModule, PrismaModule],
 })
 export class UserModule {}

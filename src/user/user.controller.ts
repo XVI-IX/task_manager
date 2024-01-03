@@ -5,17 +5,13 @@ import { Public } from '../decorators/public.decorator';
 
 @Controller()
 export class UserController {
-
-  constructor(
-    private userService: UserService,
-  ) {}
+  constructor(private userService: UserService) {}
 
   //TODO: Get the current user's profile information
   @Get('profile')
   async getProfile(@User() user) {
     return this.userService.getProfile(user.email);
   }
-
 
   @Get('dashboard')
   async getDashboard(@User() user) {

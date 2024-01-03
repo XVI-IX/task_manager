@@ -10,10 +10,8 @@ import { ConfigService } from '@nestjs/config';
 export class EmailService {
   constructor(
     private readonly mailerService: MailerService,
-    private configService: ConfigService
-    ) {
-
-  }
+    private configService: ConfigService,
+  ) {}
 
   async welcomeEmail(email: Email) {
     const { data } = email;
@@ -25,15 +23,17 @@ export class EmailService {
       subject,
       template: './welcome',
       context: {
-        name: data.username
-      }
-    })
+        name: data.username,
+      },
+    });
   }
 
   async resetPasswordEmail(email: Email) {
     const { data } = email;
-    const subject = "Password Reset Token";
-    const tokenUrl = `${this.configService.get("URL")}/auth/resetPassword?token=${data.resetToken}`;
+    const subject = 'Password Reset Token';
+    const tokenUrl = `${this.configService.get(
+      'URL',
+    )}/auth/resetPassword?token=${data.resetToken}`;
 
     console.log(tokenUrl);
 
@@ -43,9 +43,9 @@ export class EmailService {
       template: './resetToken',
       context: {
         name: data.username,
-        tokenUrl: tokenUrl
-      }
-    })
+        tokenUrl: tokenUrl,
+      },
+    });
   }
 
   async testEmail(email: Email) {
@@ -53,34 +53,34 @@ export class EmailService {
       const { data } = email;
       const subject = `Test Email`;
 
-      console.log(process.env.EMAIL_PORT)
+      console.log(process.env.EMAIL_PORT);
 
       await this.mailerService.sendMail({
         to: email.to,
         subject,
         template: './testmail',
         context: {
-          name: data.username
-        }
-      })
+          name: data.username,
+        },
+      });
     } catch (error) {
-      console.error(error)
-      throw new InternalServerErrorException("Could not send mail")
+      console.error(error);
+      throw new InternalServerErrorException('Could not send mail');
     }
   }
 
-  async updatePasswordEmail( email: Email ) {
+  async updatePasswordEmail(email: Email) {
     const { data } = email;
-    const subject = "Your password was reset."
+    const subject = 'Your password was reset.';
 
     await this.mailerService.sendMail({
       to: email.to,
       subject,
-      template: "./updateMail",
+      template: './updateMail',
       context: {
-        name: data.username
-      }
-    })
+        name: data.username,
+      },
+    });
   }
 
   @OnEvent('user.registered')
@@ -95,6 +95,6 @@ export class EmailService {
 
   @OnEvent('user.updatePassword')
   handleUpdatePasswordEvent(data: any) {
-    this.updatePasswordEmail(data)
+    this.updatePasswordEmail(data);
   }
 }

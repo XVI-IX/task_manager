@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsDate, IsInt } from "class-validator";
+import { IsString, IsNotEmpty, IsDate, IsInt } from 'class-validator';
 
 export class TaskDto {
   @IsString()
