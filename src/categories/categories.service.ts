@@ -65,7 +65,7 @@ export class CategoriesService {
   async getCategory(user_email: string, category_id: number) {
     try {
       const user = await this.getUserByEmail(user_email);
-      const category = this.prisma.category.findUnique({
+      const category = await this.prisma.category.findUnique({
         where: {
           user_id: user.user_id,
           category_id: category_id,

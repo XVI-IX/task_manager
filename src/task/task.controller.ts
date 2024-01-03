@@ -9,7 +9,6 @@ import {
   UseGuards,
   HttpCode,
   Query,
-  UsePipes,
   ParseIntPipe,
 } from '@nestjs/common';
 
@@ -22,19 +21,18 @@ import {
   ApiResponse,
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 
 import * as moment from 'moment';
 import { Task } from './classes/task';
 
 @ApiTags('Tasks')
+@ApiBearerAuth()
 @UseGuards(AuthGuard)
 @Controller('tasks')
 export class TaskController {
   constructor(private taskService: TaskService) {}
-
-  //DONE: Get a list of all tasks for the current user
-  // In case there is a query parameter for due_date
 
   @ApiResponse({
     description: 'Get a list of all tasks for the current user',
@@ -112,18 +110,5 @@ export class TaskController {
   @Delete(':id/delete')
   deleteTask(@Param('id', ParseIntPipe) task_id: number, @User() user) {
     return this.taskService.deleteTask(user.email, task_id);
-  }
-
-  //DONE: Get a list of all tasks with a specific priority
-  @ApiResponse({
-    description: 'Get tasks by priority level',
-    status: 200,
-  })
-  @Get('priority/:priority')
-  getPriorityList(
-    @User() user,
-    @Param('priority', ParseIntPipe) priority: number,
-  ) {
-    return this.taskService.getPriorityList(user.email, priority);
   }
 }

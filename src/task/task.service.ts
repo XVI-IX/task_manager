@@ -44,15 +44,17 @@ export class TaskService {
           user_id: user.user_id,
         },
         skip: (query_params.page - 1) * this.config.get('PAGESIZE'),
-        limit: this.config.get('PAGESIZE'),
+        take: parseInt(this.config.get('PAGESIZE')),
       });
 
-      return {
-        message: 'Tasks retrieved successfully',
-        success: true,
-        statusCode: 200,
-        tasks: tasks,
-      };
+      const filteredTasks = this.filterTasks(
+        tasks,
+        query_params.page,
+        query_params.category_id,
+        query_params.priority,
+      );
+
+      return filteredTasks;
     } catch (error) {
       console.error(error);
       throw new InternalServerErrorException(
@@ -138,21 +140,14 @@ export class TaskService {
           },
         });
 
-        if (tasks.length === 0) {
-          return {
-            message: `No tasks due on ${date}`,
-            success: true,
-            statusCode: 200,
-            tasks,
-          };
-        }
-
-        return {
-          message: `Tasks due on ${date}`,
-          success: true,
-          statusCode: 200,
+        const filteredTasks = this.filterTasks(
           tasks,
-        };
+          query_params.page,
+          query_params.category_id,
+          query_params.priority,
+        );
+
+        return filteredTasks;
       } catch (error) {
         console.error(error);
         throw new InternalServerErrorException(
@@ -242,42 +237,67 @@ export class TaskService {
     }
   }
 
-  async getPriorityList(user_email: string, priority: number) {
+  private filterTasks(
+    tasks,
+    page: string = '1',
+    queryCategory?: string,
+    queryPriority?: string,
+  ) {
     try {
-      const user = await this.getUserByEmail(user_email);
-
-      try {
-        const tasks = await this.prisma.task.findMany({
-          where: {
-            user_id: user.user_id,
-            priority: priority,
-          },
-        });
-
-        if (!tasks) {
-          throw new InternalServerErrorException(
-            'Unable to retrieve tasks data',
-          );
-        }
-
-        if (tasks.length === 0) {
-          return {
-            message: `No tasks with priority of ${priority}`,
-            success: true,
-            statusCode: 200,
-          };
-        }
+      if (queryCategory && queryPriority) {
+        const filteredTasks = tasks.filter(
+          (task) =>
+            task.category_id === parseInt(queryCategory) &&
+            task.priority === parseInt(queryPriority),
+        );
 
         return {
-          message: `Tasks with priority of ${priority}`,
+          message: 'Tasks retrieved Successfully',
           success: true,
           statusCode: 200,
-          tasks: tasks,
+          tasks: filteredTasks,
+          total_tasks: filteredTasks.length,
+          page: page || 1,
         };
-      } catch (error) {
-        console.error(error);
-        throw new InternalServerErrorException(error.message);
       }
+
+      if (queryCategory) {
+        const filteredTasks = tasks.filter(
+          (task) => task.category_id === parseInt(queryCategory),
+        );
+
+        return {
+          message: 'Tasks retrieved Successfully',
+          success: true,
+          statusCode: 200,
+          tasks: filteredTasks,
+          total_tasks: filteredTasks.length,
+          page: page || 1,
+        };
+      }
+
+      if (queryPriority) {
+        const filteredTasks = tasks.filter(
+          (task) => task.priority === parseInt(queryPriority),
+        );
+        return {
+          message: 'Tasks retrieved Successfully',
+          success: true,
+          statusCode: 200,
+          tasks: filteredTasks,
+          total_tasks: filteredTasks.length,
+          page: page || 1,
+        };
+      }
+
+      return {
+        message: 'Tasks retrieved successfully',
+        success: true,
+        statusCode: 200,
+        tasks: tasks,
+        total_tasks: tasks.length,
+        page: page || 1,
+      };
     } catch (error) {
       console.error(error);
       throw new InternalServerErrorException(error.message);

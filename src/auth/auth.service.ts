@@ -2,7 +2,6 @@ import {
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
-  Req,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -181,7 +180,7 @@ export class AuthService {
 
   async resetPassword(password: string, user_email: string, token: string) {
     try {
-      let user = await this.prisma.user.findUnique({
+      const user = await this.prisma.user.findUnique({
         where: {
           email: user_email,
         },
