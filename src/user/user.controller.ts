@@ -1,7 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from '../decorators/user.decorator';
-import { Public } from '../decorators/public.decorator';
 import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller()
@@ -18,11 +17,5 @@ export class UserController {
   @Get('dashboard')
   async getDashboard(@User() user) {
     return this.userService.getDashboard(user.email);
-  }
-
-  @Public()
-  @Get('test')
-  async testUser(): Promise<any> {
-    return this.userService.testUser();
   }
 }

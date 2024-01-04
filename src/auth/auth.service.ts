@@ -56,18 +56,6 @@ export class AuthService {
       });
 
       return token;
-
-      // const token = await randomBytes(256, (err, buff) => {
-      //   if (err) {
-      //     throw new InternalServerErrorException("Could not generate reset token")
-      //   }
-
-      //   const tokenString = buff.toString('hex');
-
-      //   return tokenString;
-      // });
-
-      // return token;
     } catch (error) {
       console.error(error);
       throw new InternalServerErrorException('Token not generated');

@@ -25,7 +25,6 @@ import {
 } from '@nestjs/swagger';
 
 import * as moment from 'moment';
-import { Task } from './classes/task';
 
 @ApiTags('Tasks')
 @ApiBearerAuth()
@@ -63,7 +62,6 @@ export class TaskController {
   @ApiResponse({
     description: 'Create a new task',
     status: 201,
-    type: Task,
   })
   @ApiInternalServerErrorResponse({
     description: 'Task could not be created successfully.',

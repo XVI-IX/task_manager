@@ -1,6 +1,4 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { CreateEmailDto } from './dto/create-email.dto';
-import { UpdateEmailDto } from './dto/update-email.dto';
 import { MailerService } from '@nestjs-modules/mailer';
 import { Email } from './entities/email.entity';
 import { OnEvent } from '@nestjs/event-emitter';

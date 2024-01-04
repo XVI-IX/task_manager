@@ -89,14 +89,4 @@ export class UserService {
       throw new InternalServerErrorException('Unable to retrieve user data');
     }
   }
-
-  async testUser() {
-    const user = await this.prisma.user.findUnique({
-      where: {
-        email: 'testUser@admin.com',
-      },
-    });
-
-    return user.username;
-  }
 }
